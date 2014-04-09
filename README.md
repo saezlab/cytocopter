@@ -1,4 +1,4 @@
-Cytocopter - providing an intuitive and easy to learn graphical user interface (GUI) to CellNOptR methods through Cytoscape.
+Cytocopter - CellNOptR in Cytoscape
 
 This results in a point and click interface where users can run the same steps as they would using an R script without having to actually write any code. Given that this is a front-end to the R algorithms, consistency is ensured between the results obtained through the GUI and those obtained through the corresponding scripts.
 
