@@ -15,7 +15,10 @@ NAME=cytocopter
 VERSION=2.0.0
 
 default: mvn-build
-	mv target/$(NAME)-$(VERSION).jar /Users/emanuel/CytoscapeConfiguration/3/apps/installed/
+	cp target/$(NAME)-$(VERSION).jar /Users/emanuel/CytoscapeConfiguration/3/apps/installed/
 
 mvn-build:
 	mvn clean install
+
+lsof:
+	lsof -i | grep Rserve

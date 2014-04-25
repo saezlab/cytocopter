@@ -6,25 +6,18 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
+@SuppressWarnings("serial")
+public class CytocopterMenuAction extends AbstractCyAction {
 
-/**
- * Creates a new menu item under Apps menu section.
- *
- */
-public class MenuAction extends AbstractCyAction {
-
-	public MenuAction(CyApplicationManager cyApplicationManager, final String menuTitle) {
-		
-		super(menuTitle, cyApplicationManager, null, null);
+	public CytocopterMenuAction(CyServiceRegistrar cyServiceRegistrar, final String menuTitle) {
+		super(menuTitle, cyServiceRegistrar.getService(CyApplicationManager.class), null, null);
 		setPreferredMenu("Apps");
 		
 	}
 
 	public void actionPerformed(ActionEvent e) {
-
-		// Write your own function here.
 		JOptionPane.showMessageDialog(null, "Hello Cytoscape World!");
-		
 	}
 }
