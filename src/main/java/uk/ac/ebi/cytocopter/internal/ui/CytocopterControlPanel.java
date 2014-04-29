@@ -1,29 +1,32 @@
 package uk.ac.ebi.cytocopter.internal.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.File;
+import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.FileChooserFilter;
 
-import uk.ac.ebi.cytocopter.internal.utils.AlgorithmConfigurations;
+import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.DataMouseListener;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxAddedNetwork;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxRemovedNetwork;
+import uk.ac.ebi.cytocopter.internal.ui.utils.LayoutUtils;
 
 @SuppressWarnings("serial")
 public class CytocopterControlPanel extends JPanel implements CytoPanelComponent {
@@ -33,6 +36,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	public CytocopterControlPanel (CyServiceRegistrar cyServiceRegistrar) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		
+		// Define panel layout
 		GridBagLayout layout = new GridBagLayout();
 		layout.columnWidths = new int[]{70, 130, 130};
 		
@@ -54,13 +58,16 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		c.gridwidth = 1;
 		add(networkLabel, c);
 		
-		DefaultComboBoxModel networkComboModel = new DefaultComboBoxModel();
-		networkComboModel.addElement("Network1");
-		
-		JComboBox networkCombo = new JComboBox(networkComboModel);
+		JComboBox networkCombo = new JComboBox(LayoutUtils.getAllCyNetworkComboBoxModel(cyServiceRegistrar));
 		c.gridx = 1;
 		c.gridwidth = 2;
 		add(networkCombo, c);
+		
+		NetworkComboBoxAddedNetwork addNetworkListener = new NetworkComboBoxAddedNetwork(networkCombo);
+		cyServiceRegistrar.registerAllServices(addNetworkListener, new Properties());
+		
+		NetworkComboBoxRemovedNetwork removeNetworkListener = new NetworkComboBoxRemovedNetwork(networkCombo);
+		cyServiceRegistrar.registerAllServices(removeNetworkListener, new Properties());
 		
 		// Data panel
 		c.gridy = 1;
@@ -106,6 +113,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		algorithmLayout.columnWidths = new int[]{70, 95, 70, 95};
 		
 		JPanel algorithmPanel = new JPanel(algorithmLayout);
+		algorithmPanel.setBorder(new TitledBorder(new LineBorder(Color.black, 1), "Configurations"));
 		
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.ipadx = 5;
@@ -114,7 +122,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		constraints.gridy = 0;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		
-		for (AlgorithmConfigurations conf : AlgorithmConfigurations.values()) {
+		for (AlgorithmConfigurationsEnum conf : AlgorithmConfigurationsEnum.values()) {
 			JLabel label = new JLabel(conf.getName());
 			JTextField textField = new JTextField(conf.getDefaultValue().toString());
 			
@@ -135,7 +143,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		c.gridy = 4;
 		c.gridx = 0;
 		c.gridwidth = 3;
-		c.weighty = 0.5;
+		c.weighty = 0.1;
 		add(algorithmPanel, c);
 		
 		this.setVisible(true);
@@ -161,37 +169,4 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		return "Cytocopter";
 	}
 	
-	public class DataMouseListener implements MouseListener {
-		
-		private JTextField dataTextField;
-		
-		public DataMouseListener (JTextField dataTextField) {
-			this.dataTextField = dataTextField;
-		}
-		
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			JFileChooser fc = new JFileChooser();
-			fc.addChoosableFileFilter(new FileChooserFilter("MIDAS", "csv"));
-			
-			int returnVal = fc.showOpenDialog(null);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-	            File file = fc.getSelectedFile();
-	            dataTextField.setText(file.getName());
-	        }
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {}
-
-		@Override
-		public void mouseExited(MouseEvent e) {}
-
-		@Override
-		public void mousePressed(MouseEvent e) {}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {}
-	}
-
 }

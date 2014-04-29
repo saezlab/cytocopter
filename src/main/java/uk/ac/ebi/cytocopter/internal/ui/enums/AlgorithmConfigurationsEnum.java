@@ -1,6 +1,6 @@
-package uk.ac.ebi.cytocopter.internal.utils;
+package uk.ac.ebi.cytocopter.internal.ui.enums;
 
-public enum AlgorithmConfigurations {
+public enum AlgorithmConfigurationsEnum {
 
 	SIZE_FAC("Size fac", "Size scalling factor", 1E-4),
 	NA_FAC("NA fac", "NA scalling factor", 1.0),
@@ -17,7 +17,7 @@ public enum AlgorithmConfigurations {
 	private String description;
 	private Double defaultValue;
 	
-	private AlgorithmConfigurations (String name, String description, Double defaultValue) {
+	private AlgorithmConfigurationsEnum (String name, String description, Double defaultValue) {
 		this.name = name;
 		this.description = description;
 		this.defaultValue = defaultValue;

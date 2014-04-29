@@ -34,7 +34,7 @@ public class ConfigureCellnoptrTask extends AbstractTask implements ObservableTa
 		// Check if graph is installed		
 		connection.installBioconductorPackage(BioconductorPackagesEnum.GRAPH);
 		
-		// Check if RBGL is installed (RBGL depends on graph, therefore it must be imported after)
+		// Check if RBGL is installed
 		connection.installBioconductorPackage(BioconductorPackagesEnum.RBGL);
 		
 		// Check if Cairo is installed
