@@ -188,6 +188,11 @@
 			<artifactId>command-executor-api</artifactId>
 			<version>${cytoscape.api.version}</version>
 		</dependency>
+		<dependency>
+    		<groupId>org.cytoscape</groupId>
+    		<artifactId>swing-util-api</artifactId>
+    		<version>${cytoscape.api.version}</version>
+		</dependency>
 
 		<!-- 3rd party dependencies -->
 		<dependency>
