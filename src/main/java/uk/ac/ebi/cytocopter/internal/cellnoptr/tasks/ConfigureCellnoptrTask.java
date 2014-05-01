@@ -1,4 +1,4 @@
-package uk.ac.ebi.cytocopter.internal.tasks.cellnoptr;
+package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;

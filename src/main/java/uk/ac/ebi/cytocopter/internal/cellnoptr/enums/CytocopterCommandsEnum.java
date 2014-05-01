@@ -1,8 +1,9 @@
-package uk.ac.ebi.cytocopter.internal.tasks.enums;
+package uk.ac.ebi.cytocopter.internal.cellnoptr.enums;
 
 public enum CytocopterCommandsEnum {
 	CONFIGURE("configure"),
-	PREPROCESS("preprocess");
+	PREPROCESS("preprocess"),
+	NODETYPE("node type");
 	
 	public static final String CYTOCOPTER_NAME_SPACE = "cytocopter";
 	

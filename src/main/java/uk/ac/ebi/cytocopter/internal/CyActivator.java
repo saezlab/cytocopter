@@ -1,17 +1,20 @@
 package uk.ac.ebi.cytocopter.internal;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
-import uk.ac.ebi.cytocopter.internal.tasks.cellnoptr.ConfigureCellnoptrTaskFactory;
-import uk.ac.ebi.cytocopter.internal.tasks.cellnoptr.PreprocessTaskFactory;
-import uk.ac.ebi.cytocopter.internal.tasks.enums.CytocopterCommandsEnum;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.CytocopterCommandsEnum;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFactory;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
 
@@ -20,8 +23,12 @@ public class CyActivator extends AbstractCyActivator {
 	public BundleContext bundleContext;
 	public CyServiceRegistrar cyServiceRegistrar;
 	
+	public static final String visualStyleFile = "/CytocopterVisualStyle.xml";
+	public static final String visualStyleName = "Cytocopter";
+	
+	
 	@Override
-	public void start(BundleContext bundleContext) throws Exception {	
+	public void start(BundleContext bundleContext) throws Exception {
 		this.bundleContext = bundleContext;
 		cyServiceRegistrar = getService(bundleContext, CyServiceRegistrar.class);
 		
@@ -30,6 +37,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerPanels();
 		registerCyrfaceCommands();
+		loadVisualStyle();
 	}
 		
 	private void registerPanels () {
@@ -39,14 +47,21 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private void registerCyrfaceCommands () {
 		Properties props = new Properties();
+		props.setProperty(ServiceProperties.COMMAND_NAMESPACE, CytocopterCommandsEnum.CYTOCOPTER_NAME_SPACE);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.CONFIGURE.getName());
-		props.setProperty(ServiceProperties.COMMAND_NAMESPACE, CytocopterCommandsEnum.CYTOCOPTER_NAME_SPACE);
 		registerService(bundleContext, new ConfigureCellnoptrTaskFactory(cyServiceRegistrar), TaskFactory.class, props);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.PREPROCESS.getName());
-		props.setProperty(ServiceProperties.COMMAND_NAMESPACE, CytocopterCommandsEnum.CYTOCOPTER_NAME_SPACE);
 		registerService(bundleContext, new PreprocessTaskFactory(cyServiceRegistrar), TaskFactory.class, props);
+		
+		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.NODETYPE.getName());
+		registerService(bundleContext, new SetNodeTypeTaskFactory(cyServiceRegistrar), TaskFactory.class, props);
 	}
 
+	private void loadVisualStyle () {
+		InputStream in = getClass().getResourceAsStream(visualStyleFile);
+		LoadVizmapFileTaskFactory loadVizmapFileTaskFactory =  cyServiceRegistrar.getService(LoadVizmapFileTaskFactory.class);
+		loadVizmapFileTaskFactory.loadStyles(in);
+	}
 }

@@ -1,6 +1,8 @@
-package uk.ac.ebi.cytocopter.internal.tasks.cellnoptr;
+package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.TreeSet;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
@@ -9,7 +11,12 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
-import uk.ac.ebi.cytocopter.internal.tasks.utils.CommandExecutor;
+import uk.ac.ebi.cyrface.internal.utils.SVGPlots;
+import uk.ac.ebi.cytocopter.internal.CyActivator;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
+import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
 
 public class PreprocessTask  extends AbstractTask implements ObservableTask {
 
@@ -33,9 +40,12 @@ public class PreprocessTask  extends AbstractTask implements ObservableTask {
 		this.connection = connection;
 	}
 	
+	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run (TaskMonitor taskMonitor) throws Exception {
+		
+		taskMonitor.setTitle("Cytocopter - Preprocess...");
 		
 		// Check if connection is established
 		if (connection == null) connection = new RserveHandler(cyServiceRegistrar);
@@ -105,15 +115,32 @@ public class PreprocessTask  extends AbstractTask implements ObservableTask {
 		// Plot cno list
 		String plotCnolistCommand = "plotCNOlist(cnolist)";
 		File cnolistPlot = connection.executeReceivePlotFile(plotCnolistCommand, "cnolist");
+		SVGPlots plot = new SVGPlots(cnolistPlot);
+//		cyServiceRegistrar.getService(CytocopterResultsPanel.class);
 		
 		// Get node types
 		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
+		NetworkAttributes.addAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
+		
 		String[] inhibitorsArray = connection.executeReceiveStrings("cnolist$namesInhibitors");
-		String[] signalsArray = connection.executeReceiveStrings("cnolist$namesSignals");
+		NetworkAttributes.addAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
+		
+		String[] readoutArray = connection.executeReceiveStrings("cnolist$namesSignals");
+		NetworkAttributes.addAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
+		
 		String[] compressedArray = connection.executeReceiveStrings("cutcompexp$speciesCompressed");
+		NetworkAttributes.addAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
+		
+		Collection<String> inhibitedReadouts = intersect(inhibitorsArray, readoutArray);
+		NetworkAttributes.addAttribute(networkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
 		
 		// Get time signals
 		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
+		
+		// Apply visual style
+		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
+		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
+		
 		
 		// Add output
 		outputString.append(loadModelOutput);
@@ -121,6 +148,17 @@ public class PreprocessTask  extends AbstractTask implements ObservableTask {
 		outputString.append(createCNOListOutput);
 		outputString.append(finderIndicesOutput);
 		outputString.append(findNONCOutput);
+	}
+	
+	private Collection<String> intersect (String[] list1, String[] list2) {
+		Collection<String> overlap = new TreeSet<String>();
+		
+		for (String element : list1)
+			for (String element2 : list2)
+				if (element.equals(element2))
+					overlap.add(element2);
+		
+		return overlap;
 	}
 
 	@Override

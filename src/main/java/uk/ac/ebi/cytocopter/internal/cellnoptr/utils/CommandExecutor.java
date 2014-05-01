@@ -1,4 +1,4 @@
-package uk.ac.ebi.cytocopter.internal.tasks.utils;
+package uk.ac.ebi.cytocopter.internal.cellnoptr.utils;
 
 import java.util.ArrayList;
 import java.util.List;
