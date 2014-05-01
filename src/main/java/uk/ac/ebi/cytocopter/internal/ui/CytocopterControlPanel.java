@@ -15,23 +15,47 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.DataMouseListener;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxAddedNetwork;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxRemovedNetwork;
-import uk.ac.ebi.cytocopter.internal.ui.utils.LayoutUtils;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.RunButtonMouseListener;
 
 @SuppressWarnings("serial")
 public class CytocopterControlPanel extends JPanel implements CytoPanelComponent {
 
 	public CyServiceRegistrar cyServiceRegistrar;
+	
+	protected JLabel networkLabel;
+	protected JComboBox networkCombo;
+	protected DefaultComboBoxModel networkModel;
+	
+	protected JLabel dataLabel;
+	protected JTextField dataTextField;
+	
+	protected JLabel formalismLabel;
+	protected JComboBox formalismCombo;
+	protected DefaultComboBoxModel formalismModel;
+	
+	protected JLabel dataTimePointLabel;
+	protected JComboBox dataPointCombo;
+	protected DefaultComboBoxModel dataPointModel;
+	
+	protected JButton optimiseButton;
+	
+	protected JPanel algorithmPanel;
+	
 	
 	public CytocopterControlPanel (CyServiceRegistrar cyServiceRegistrar) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
@@ -41,8 +65,8 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		layout.columnWidths = new int[]{70, 130, 130};
 		
 		setLayout(layout);
-		setSize(new Dimension(400, 400));
-		setPreferredSize(new Dimension(400, 400));
+		setSize(new Dimension(500, 400));
+		setPreferredSize(new Dimension(500, 400));
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.ipadx = 5;
@@ -50,80 +74,156 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		c.insets = new Insets(5, 5, 5, 5);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		
-		// Network panel
+		// Initialise panel components
 		c.gridy = 0;
-
-		JLabel networkLabel = new JLabel("Network");
+		createNetworkRow (c);
+		
+		c.gridy = 1;
+		createDataRow (c);
+		
+		c.gridy = 2;
+		createFormalismRow (c);
+		
+		c.gridy = 3;
+		createTimePointsRows (c);
+		
+		c.gridy = 4;
+		createOptimiseButtonRow (c);
+		
+		c.gridy = 5;
+		createAlgorithmConfigurations (c);
+		
+		// Add components listeners
+		initialiseNetworkRow();
+		initialiseDataRow();
+		intialiseFormalismRow();
+		initialiseTimePointsRows();
+		initialiseOptimiseButtonRow();
+		initialiseAlgorithmConfigurations();
+		
+		// Show panel
+		this.setVisible(true);
+	}
+	
+	private void createNetworkRow (GridBagConstraints c) {
+		networkLabel = new JLabel("Network");
+		networkLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 		c.gridx = 0;
 		c.gridwidth = 1;
 		add(networkLabel, c);
 		
-		JComboBox networkCombo = new JComboBox(LayoutUtils.getAllCyNetworkComboBoxModel(cyServiceRegistrar));
+		networkCombo = new JComboBox();
 		c.gridx = 1;
 		c.gridwidth = 2;
 		add(networkCombo, c);
+	}
+	
+	private void initialiseNetworkRow () {
+		// Fill combo box
+		networkModel = new DefaultComboBoxModel();
+ 		
+		for (CyNetwork cyNetwork : cyServiceRegistrar.getService(CyNetworkManager.class).getNetworkSet()) {
+			String cyNetworkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
+			networkModel.addElement(cyNetworkName);
+		}
 		
+		networkCombo.setModel(networkModel);
+		
+		// Add combo box listeners
 		NetworkComboBoxAddedNetwork addNetworkListener = new NetworkComboBoxAddedNetwork(networkCombo);
 		cyServiceRegistrar.registerAllServices(addNetworkListener, new Properties());
 		
 		NetworkComboBoxRemovedNetwork removeNetworkListener = new NetworkComboBoxRemovedNetwork(networkCombo);
 		cyServiceRegistrar.registerAllServices(removeNetworkListener, new Properties());
-		
-		// Data panel
-		c.gridy = 1;
-		
-		JLabel dataLabel = new JLabel("Data");
+	}
+	
+	private void createDataRow (GridBagConstraints c) {
+		dataLabel = new JLabel("Data");
+		dataLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 		c.gridx = 0;
 		c.gridwidth = 1;
 		add(dataLabel, c);
 		
-		JTextField dataTextField = new JTextField();
+		dataTextField = new JTextField();
 		c.gridx = 1;
 		c.gridwidth = 2;
 		add(dataTextField, c);
-		
+	}
+	
+	private void initialiseDataRow () {
+		// Add listener
 		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar));
-		
-		// Formalism panel
-		c.gridy = 2;
-		
-		JLabel formalismLabel = new JLabel("Formalism");
+	}
+	
+	private void createFormalismRow (GridBagConstraints c) {
+		formalismLabel = new JLabel("Formalism");
+		formalismLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 		c.gridx = 0;
 		c.gridwidth = 1;
 		add(formalismLabel, c);
 		
-		DefaultComboBoxModel formalismComboModel = new DefaultComboBoxModel();
-		formalismComboModel.addElement("Boolean");
-		
-		JComboBox formalismCombo = new JComboBox(formalismComboModel);
+		formalismCombo = new JComboBox();
 		c.gridx = 1;
 		c.gridwidth = 2;
 		add(formalismCombo, c);
-
-		// Run button
-		c.gridy = 3;
+	}
+	
+	private void intialiseFormalismRow () {
+		// Fill combo box
+		formalismModel = new DefaultComboBoxModel();
+		
+		for (FormalismEnum formalism : FormalismEnum.values())
+			formalismModel.addElement(formalism.getName());
+	}
+	
+	private void createTimePointsRows (GridBagConstraints c) {
+		c.gridx = 1;
+		c.gridwidth = 1;
+		dataTimePointLabel = new JLabel("Time point");
+		dataTimePointLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
+		add(dataTimePointLabel, c);
+		
+		c.gridx = 2;
+		dataPointCombo = new JComboBox();
+		add(dataPointCombo, c);
+	}
+	
+	private void initialiseTimePointsRows () {
+		dataPointModel = new DefaultComboBoxModel();
+		dataPointModel.addElement("--");
+		dataPointCombo.setModel(dataPointModel);
+	}
+	
+	private void createOptimiseButtonRow (GridBagConstraints c) {
+		optimiseButton = new JButton("Optimise");
+		add(optimiseButton, c);
+	}
+	
+	private void initialiseOptimiseButtonRow () {
+		optimiseButton.addMouseListener(new RunButtonMouseListener(cyServiceRegistrar));
+	}
+	
+	private void createAlgorithmConfigurations (GridBagConstraints c) {
 		c.gridx = 2;
 		c.gridwidth = 1;
 		
-		JButton runButton = new JButton("Run");
-		add(runButton, c);
-		
-		// Algorithm panel
 		GridBagLayout algorithmLayout = new GridBagLayout();
 		algorithmLayout.columnWidths = new int[]{70, 95, 70, 95};
 		
-		JPanel algorithmPanel = new JPanel(algorithmLayout);
+		algorithmPanel = new JPanel(algorithmLayout);
 		algorithmPanel.setBorder(new TitledBorder(new LineBorder(Color.black, 1), "Configurations"));
 		
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.ipadx = 5;
-		constraints.ipady = 5;
+		constraints.ipady = 6;
 		constraints.gridx = 0;
 		constraints.gridy = 0;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		
 		for (AlgorithmConfigurationsEnum conf : AlgorithmConfigurationsEnum.values()) {
 			JLabel label = new JLabel(conf.getName());
+			label.setBorder(new EmptyBorder(5, 5, 5, 5));
+			
 			JTextField textField = new JTextField(conf.getDefaultValue().toString());
 			
 			algorithmPanel.add(label, constraints);
@@ -140,14 +240,15 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 			}
 		}
 		
-		c.gridy = 4;
+		c.gridy = 6;
 		c.gridx = 0;
 		c.gridwidth = 3;
 		c.weighty = 0.1;
-		add(algorithmPanel, c);
 		
-		this.setVisible(true);
+		add(algorithmPanel, c);
 	}
+	
+	private void initialiseAlgorithmConfigurations () {}
 	
 	@Override
 	public Component getComponent() {

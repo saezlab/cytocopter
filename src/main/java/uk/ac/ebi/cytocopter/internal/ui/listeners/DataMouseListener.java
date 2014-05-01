@@ -6,7 +6,6 @@ import java.io.File;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -30,7 +29,6 @@ public class DataMouseListener implements MouseListener {
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// Browse MIDAS file
 		JFileChooser fc = new JFileChooser(selectedFile);
 		fc.addChoosableFileFilter(new FileChooserFilter("MIDAS", "csv"));
 		
@@ -40,15 +38,12 @@ public class DataMouseListener implements MouseListener {
 		if (chooseFileReturn == JFileChooser.APPROVE_OPTION) {
 			selectedFile  = fc.getSelectedFile();
             dataTextField.setText(selectedFile.getName());
-            
-    		// Preprocess network and Midas
-    		int fitReturn = JOptionPane.showConfirmDialog(null, "Fit Data with Network?", "Cytocopter - Preprocess", JOptionPane.YES_NO_OPTION);
-    		
-    		if (chooseFileReturn == JFileChooser.APPROVE_OPTION && fitReturn == JFileChooser.APPROVE_OPTION && network != null) {
-    			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(cyServiceRegistrar, selectedFile.getAbsolutePath(), network);    			
-    			cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
-    		}
         }
+		
+		if (network != null) {
+			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(cyServiceRegistrar, selectedFile.getAbsolutePath(), network);    			
+			cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
+		}
 		
 	}
 

@@ -1,7 +1,6 @@
 package uk.ac.ebi.cytocopter.internal.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
@@ -10,6 +9,7 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -43,8 +43,10 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 		logPanel = new JTextArea();
 		logPanel.setEditable(false);
 		logPanel.setRows(15);
+		logPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		
 		JScrollPane scrollLogPanel = new JScrollPane(logPanel);
+		scrollLogPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		
 		add(scrollLogPanel, BorderLayout.SOUTH);
 	}
