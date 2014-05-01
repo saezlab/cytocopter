@@ -7,7 +7,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
-import uk.ac.ebi.cytocopter.internal.utils.NetworkUtils;
+import uk.ac.ebi.cytocopter.internal.utils.CyNetworkUtils;
 
 public class NetworkAttributes {
 
@@ -19,14 +19,14 @@ public class NetworkAttributes {
 	}
 	
 	public static void addAttribute (String networkName, CyNode node, NodeTypeAttributeEnum type, CyServiceRegistrar cyServiceRegistrar) {
-		CyNetwork network = NetworkUtils.getCyNetwork(cyServiceRegistrar, networkName);
+		CyNetwork network = CyNetworkUtils.getCyNetwork(cyServiceRegistrar, networkName);
 		addAttribute(network, node, type, cyServiceRegistrar);
 	}
 	
 	public static void addAttribute (String networkName, String nodeName, NodeTypeAttributeEnum type, CyServiceRegistrar cyServiceRegistrar) {
-		CyNetwork network = NetworkUtils.getCyNetwork(cyServiceRegistrar, networkName);
+		CyNetwork network = CyNetworkUtils.getCyNetwork(cyServiceRegistrar, networkName);
 		
-		CyNode node = NetworkUtils.getCyNode(network, nodeName);
+		CyNode node = CyNetworkUtils.getCyNode(network, nodeName);
 		
 		addAttribute(network, node, type, cyServiceRegistrar);
 	}

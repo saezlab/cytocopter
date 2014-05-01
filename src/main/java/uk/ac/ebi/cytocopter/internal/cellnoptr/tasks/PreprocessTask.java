@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.TreeSet;
 
+import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -11,23 +12,23 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
-import uk.ac.ebi.cyrface.internal.utils.SVGPlots;
 import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
+import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
-public class PreprocessTask  extends AbstractTask implements ObservableTask {
+public class PreprocessTask extends AbstractTask implements ObservableTask {
 
 	private CyServiceRegistrar cyServiceRegistrar;
 	private RserveHandler connection;
 	private StringBuilder outputString;
 
-	@Tunable(description="midasFile")
+	@Tunable(description="midasFile", context="nogui")
     public String midasFile = "";
 	
-	@Tunable(description="networkName")
+	@Tunable(description="networkName", context="nogui")
     public String networkName = "";
 	
 	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar) {
@@ -35,9 +36,19 @@ public class PreprocessTask  extends AbstractTask implements ObservableTask {
 	}
 	
 	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection) {
+		this(cyServiceRegistrar, connection, null, null);
+	}
+	
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, String midasFile, String networkName) {
+		this(cyServiceRegistrar, null, midasFile, networkName);
+	}
+	
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection, String midasFile, String networkName) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.outputString = new StringBuilder();
 		this.connection = connection;
+		this.midasFile = midasFile;
+		this.networkName = networkName;
 	}
 	
 	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
@@ -115,8 +126,9 @@ public class PreprocessTask  extends AbstractTask implements ObservableTask {
 		// Plot cno list
 		String plotCnolistCommand = "plotCNOlist(cnolist)";
 		File cnolistPlot = connection.executeReceivePlotFile(plotCnolistCommand, "cnolist");
-		SVGPlots plot = new SVGPlots(cnolistPlot);
-//		cyServiceRegistrar.getService(CytocopterResultsPanel.class);
+		
+		CytocopterResultsPanel resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class);
+		resultsPanel.appendSVGPlot(cnolistPlot);
 		
 		// Get node types
 		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
@@ -141,13 +153,17 @@ public class PreprocessTask  extends AbstractTask implements ObservableTask {
 		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
 		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
 		
-		
 		// Add output
+		outputString.append("---- Cytocopter Preprocessing" + "\n");
+		outputString.append("Network: " + networkName + ", MIDAS: " + FilenameUtils.getName(midasFile) + "\n"); 
 		outputString.append(loadModelOutput);
 		outputString.append(loadMidasOutput);
 		outputString.append(createCNOListOutput);
 		outputString.append(finderIndicesOutput);
 		outputString.append(findNONCOutput);
+		
+		// Append output to log panel in CytocopterResultsPanel
+		resultsPanel.appendLog(outputString.toString());
 	}
 	
 	private Collection<String> intersect (String[] list1, String[] list2) {

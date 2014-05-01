@@ -82,7 +82,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		c.gridwidth = 2;
 		add(dataTextField, c);
 		
-		dataTextField.addMouseListener(new DataMouseListener(dataTextField));
+		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar));
 		
 		// Formalism panel
 		c.gridy = 2;
