@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.Collection;
 import java.util.TreeSet;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
@@ -24,6 +27,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	private CyServiceRegistrar cyServiceRegistrar;
 	private RserveHandler connection;
 	private StringBuilder outputString;
+	private JComboBox dataPointCombo;
 
 	@Tunable(description="midasFile", context="nogui")
     public String midasFile = "";
@@ -31,24 +35,26 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="networkName", context="nogui")
     public String networkName = "";
 	
+	
 	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar) {
-		this (cyServiceRegistrar, null);
+		this (cyServiceRegistrar, null, null, null, null);
 	}
 	
 	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection) {
-		this(cyServiceRegistrar, connection, null, null);
+		this(cyServiceRegistrar, connection, null, null, null);
 	}
 	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, String midasFile, String networkName) {
-		this(cyServiceRegistrar, null, midasFile, networkName);
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, String midasFile, String networkName, JComboBox dataPointCombo) {
+		this(cyServiceRegistrar, null, midasFile, networkName, dataPointCombo);
 	}
 	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection, String midasFile, String networkName) {
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection, String midasFile, String networkName, JComboBox dataPointCombo) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.outputString = new StringBuilder();
 		this.connection = connection;
 		this.midasFile = midasFile;
 		this.networkName = networkName;
+		this.dataPointCombo = dataPointCombo;
 	}
 	
 	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
@@ -148,6 +154,17 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		// Get time signals
 		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
+		
+		// Add time signals to ComboBoxModel if in GUI context
+		if (dataPointCombo != null) {
+			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
+			for (Double timePoint : timeSignals) {
+				dataPointModel.addElement(timePoint.toString());
+			}
+			
+			dataPointCombo.setEnabled(true);
+			dataPointCombo.setModel(dataPointModel);
+		}
 		
 		// Apply visual style
 		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;

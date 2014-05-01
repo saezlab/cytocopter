@@ -152,7 +152,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	
 	private void initialiseDataRow () {
 		// Add listener
-		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar));
+		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar, dataPointCombo));
 	}
 	
 	private void createFormalismRow (GridBagConstraints c) {
@@ -174,6 +174,8 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		
 		for (FormalismEnum formalism : FormalismEnum.values())
 			formalismModel.addElement(formalism.getName());
+		
+		formalismCombo.setModel(formalismModel);
 	}
 	
 	private void createTimePointsRows (GridBagConstraints c) {
@@ -192,6 +194,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		dataPointModel = new DefaultComboBoxModel();
 		dataPointModel.addElement("--");
 		dataPointCombo.setModel(dataPointModel);
+		dataPointCombo.setEnabled(false);
 	}
 	
 	private void createOptimiseButtonRow (GridBagConstraints c) {

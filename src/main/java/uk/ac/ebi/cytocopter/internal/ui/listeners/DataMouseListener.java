@@ -20,11 +20,13 @@ public class DataMouseListener implements MouseListener {
 	private JTextField dataTextField;
 	private JComboBox networkCombo;
 	private File selectedFile;
+	private JComboBox dataPointCombo;
 	
-	public DataMouseListener (JTextField dataTextField, JComboBox networkCombo, CyServiceRegistrar cyServiceRegistrar) {
+	public DataMouseListener (JTextField dataTextField, JComboBox networkCombo, CyServiceRegistrar cyServiceRegistrar, JComboBox dataPointCombo) {
 		this.dataTextField = dataTextField;
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.networkCombo = networkCombo;
+		this.dataPointCombo = dataPointCombo;
 	}
 	
 	@Override
@@ -41,7 +43,7 @@ public class DataMouseListener implements MouseListener {
         }
 		
 		if (network != null) {
-			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(cyServiceRegistrar, selectedFile.getAbsolutePath(), network);    			
+			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(cyServiceRegistrar, selectedFile.getAbsolutePath(), network, dataPointCombo);    			
 			cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
 		}
 		
