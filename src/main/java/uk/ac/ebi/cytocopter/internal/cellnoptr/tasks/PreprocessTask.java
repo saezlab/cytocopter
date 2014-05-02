@@ -133,9 +133,6 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		String plotCnolistCommand = "plotCNOlist(cnolist)";
 		File cnolistPlot = connection.executeReceivePlotFile(plotCnolistCommand, "cnolist");
 		
-		CytocopterResultsPanel resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class);
-		resultsPanel.appendSVGPlot(cnolistPlot);
-		
 		// Get node types
 		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
 		NetworkAttributes.addAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
@@ -155,18 +152,6 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		// Get time signals
 		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
 		
-		// Add time signals to ComboBoxModel if in GUI context
-		if (contorlPanel != null) {
-			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
-
-			for (int i = 1; i < timeSignals.length; i++) {
-				dataPointModel.addElement(timeSignals[i]);
-			}
-			
-			contorlPanel.dataPointCombo.setModel(dataPointModel);
-			contorlPanel.setTimePointComboBoxStatus();
-		}
-		
 		// Apply visual style
 		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
 		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
@@ -180,8 +165,25 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		outputString.append(finderIndicesOutput);
 		outputString.append(findNONCOutput);
 		
-		// Append output to log panel in CytocopterResultsPanel
-		resultsPanel.appendLog(outputString.toString());
+		// If GUI context
+		if (contorlPanel != null) {
+			
+			// Create model for data point combo box
+			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
+			for (int i = 1; i < timeSignals.length; i++)
+				dataPointModel.addElement(timeSignals[i]);
+			
+			// Set combo box model and check status of time point combo box
+			contorlPanel.dataPointCombo.setModel(dataPointModel);
+			contorlPanel.setTimePointComboBoxStatus();
+			
+			// Add plot to results panel
+			CytocopterResultsPanel resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class);
+			resultsPanel.appendSVGPlot(cnolistPlot);
+			
+			// Append output to log panel in CytocopterResultsPanel
+			resultsPanel.appendLog(outputString.toString());
+		}
 	}
 	
 	private Collection<String> intersect (String[] list1, String[] list2) {
