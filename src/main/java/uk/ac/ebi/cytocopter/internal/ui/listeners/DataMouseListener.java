@@ -4,56 +4,43 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JTextField;
 
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
+import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 
 public class DataMouseListener implements MouseListener {
-	
-	private CyServiceRegistrar cyServiceRegistrar;
-	private JTextField dataTextField;
-	private JComboBox networkCombo;
-	private File selectedFile;
-	private JComboBox dataPointCombo;
-	private JComboBox formalismCombo;
-	
-	public DataMouseListener (JTextField dataTextField, JComboBox networkCombo, CyServiceRegistrar cyServiceRegistrar, JComboBox dataPointCombo, JComboBox formalismCombo) {
-		this.dataTextField = dataTextField;
-		this.cyServiceRegistrar = cyServiceRegistrar;
-		this.networkCombo = networkCombo;
-		this.dataPointCombo = dataPointCombo;
-		this.formalismCombo = formalismCombo;
-	}
-	
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		JFileChooser fc = new JFileChooser(selectedFile);
-		fc.addChoosableFileFilter(new FileChooserFilter("MIDAS", "csv"));
-		
-		String network = (String) networkCombo.getSelectedItem();
-		
-		int chooseFileReturn = fc.showOpenDialog(null);
-		if (chooseFileReturn == JFileChooser.APPROVE_OPTION) {
-			selectedFile  = fc.getSelectedFile();
-            dataTextField.setText(selectedFile.getName());
-        }
-		
-		if (network != null) {
-			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(cyServiceRegistrar, selectedFile.getAbsolutePath(), network, dataPointCombo);    			
-			cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
-		}
 
-		if (formalismCombo.getSelectedItem().toString().equalsIgnoreCase(FormalismEnum.BOOLEAN.name()) && dataPointCombo.getItemCount() > 1) {
-			dataPointCombo.setEnabled(true);
-		} else {
-			dataPointCombo.setEnabled(false);
+	private CytocopterControlPanel contorlPanel;
+	private File selectedFile;
+
+	public DataMouseListener (CytocopterControlPanel controlPanel) {
+		this.contorlPanel = controlPanel;
+	}
+
+	@Override
+	public void mouseClicked (MouseEvent event) {
+		try {
+			JFileChooser fc = new JFileChooser(selectedFile);
+			fc.addChoosableFileFilter(new FileChooserFilter("MIDAS", "csv"));
+
+			String network = (String) contorlPanel.networkCombo.getSelectedItem();
+
+			int chooseFileReturn = fc.showOpenDialog(null);
+			if (network != null && chooseFileReturn == JFileChooser.APPROVE_OPTION) {
+				selectedFile  = fc.getSelectedFile();
+				contorlPanel.dataTextField.setText(selectedFile.getName());
+
+				PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(contorlPanel, selectedFile, network);
+
+				contorlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

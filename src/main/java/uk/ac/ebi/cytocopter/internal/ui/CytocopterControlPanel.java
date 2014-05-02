@@ -6,8 +6,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
@@ -39,24 +39,23 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 
 	public CyServiceRegistrar cyServiceRegistrar;
 	
-	protected JLabel networkLabel;
-	protected JComboBox networkCombo;
-	protected DefaultComboBoxModel networkModel;
+	public JLabel networkLabel;
+	public JComboBox networkCombo;
+	public DefaultComboBoxModel networkModel;
 	
-	protected JLabel dataLabel;
-	protected JTextField dataTextField;
+	public JLabel dataLabel;
+	public JTextField dataTextField;
 	
-	protected JLabel formalismLabel;
-	protected JComboBox formalismCombo;
-	protected DefaultComboBoxModel formalismModel;
+	public JLabel formalismLabel;
+	public JComboBox formalismCombo;
+	public DefaultComboBoxModel formalismModel;
 	
-	protected JLabel dataTimePointLabel;
-	protected JComboBox dataPointCombo;
-	protected DefaultComboBoxModel dataPointModel;
+	public JLabel dataTimePointLabel;
+	public JComboBox dataPointCombo;
 	
-	protected JButton optimiseButton;
+	public JButton optimiseButton;
 	
-	protected JPanel algorithmPanel;
+	public JPanel algorithmPanel;
 	
 	
 	public CytocopterControlPanel (CyServiceRegistrar cyServiceRegistrar) {
@@ -154,7 +153,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	
 	private void initialiseDataRow () {
 		// Add listener
-		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar, dataPointCombo, formalismCombo));
+		dataTextField.addMouseListener(new DataMouseListener(this));
 	}
 	
 	private void createFormalismRow (GridBagConstraints c) {
@@ -170,7 +169,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		add(formalismCombo, c);
 	}
 	
-	private void intialiseFormalismRow () {
+	private void intialiseFormalismRow () {		
 		// Fill combo box
 		formalismModel = new DefaultComboBoxModel();
 		
@@ -178,16 +177,13 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 			formalismModel.addElement(formalism.getName());
 		
 		formalismCombo.setModel(formalismModel);
+		formalismCombo.setSelectedItem(FormalismEnum.BOOLEAN.name());
 		
 		// Add Listener
-		formalismCombo.addItemListener(new ItemListener() {
+		formalismCombo.addActionListener(new ActionListener() {
 			@Override
-			public void itemStateChanged(ItemEvent arg0) {
-				if (formalismCombo.getModel().getSelectedItem().equals(FormalismEnum.BOOLEAN.name()) && dataPointCombo.getModel().getSize() > 1) {
-					dataPointCombo.setEnabled(true);
-				} else {
-					dataPointCombo.setEnabled(false);
-				}
+			public void actionPerformed(ActionEvent e) {
+				setTimePointComboBoxStatus();
 			}
 		});
 	}
@@ -205,9 +201,10 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	}
 	
 	private void initialiseTimePointsRows () {
-		dataPointModel = new DefaultComboBoxModel();
+		DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
 		dataPointModel.addElement("--");
 		dataPointCombo.setModel(dataPointModel);
+		
 		dataPointCombo.setEnabled(false);
 	}
 	
@@ -266,6 +263,14 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	}
 	
 	private void initialiseAlgorithmConfigurations () {}
+	
+	public void setTimePointComboBoxStatus () {
+		if (dataPointCombo.getModel().getSize() > 1 && formalismCombo.getSelectedItem().toString().equals(FormalismEnum.BOOLEAN.getName())) {
+			dataPointCombo.setEnabled(true);
+		} else {
+			dataPointCombo.setEnabled(false);
+		}
+	}
 	
 	@Override
 	public Component getComponent() {

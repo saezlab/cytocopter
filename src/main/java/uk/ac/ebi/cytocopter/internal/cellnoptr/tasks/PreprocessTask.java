@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -19,6 +18,7 @@ import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
+import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
@@ -27,7 +27,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	private CyServiceRegistrar cyServiceRegistrar;
 	private RserveHandler connection;
 	private StringBuilder outputString;
-	private JComboBox dataPointCombo;
+	private CytocopterControlPanel contorlPanel;
 
 	@Tunable(description="midasFile", context="nogui")
     public String midasFile = "";
@@ -44,17 +44,17 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		this(cyServiceRegistrar, connection, null, null, null);
 	}
 	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, String midasFile, String networkName, JComboBox dataPointCombo) {
-		this(cyServiceRegistrar, null, midasFile, networkName, dataPointCombo);
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, String midasFile, String networkName, CytocopterControlPanel contorlPanel) {
+		this(cyServiceRegistrar, null, midasFile, networkName, contorlPanel);
 	}
 	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection, String midasFile, String networkName, JComboBox dataPointCombo) {
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection, String midasFile, String networkName, CytocopterControlPanel contorlPanel) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.outputString = new StringBuilder();
 		this.connection = connection;
 		this.midasFile = midasFile;
 		this.networkName = networkName;
-		this.dataPointCombo = dataPointCombo;
+		this.contorlPanel = contorlPanel;
 	}
 	
 	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
@@ -156,14 +156,15 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
 		
 		// Add time signals to ComboBoxModel if in GUI context
-		if (dataPointCombo != null) {
+		if (contorlPanel != null) {
 			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
 
 			for (int i = 1; i < timeSignals.length; i++) {
 				dataPointModel.addElement(timeSignals[i]);
 			}
 			
-			dataPointCombo.setModel(dataPointModel);
+			contorlPanel.dataPointCombo.setModel(dataPointModel);
+			contorlPanel.setTimePointComboBoxStatus();
 		}
 		
 		// Apply visual style

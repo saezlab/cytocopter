@@ -39,7 +39,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		CommandExecutor.execute(configureCellnoptr.createTaskIterator(), cyServiceRegistrar);
 		
 		// Configure CellNOptR R package
-		PreprocessTaskFactory preprocess = new PreprocessTaskFactory(cyServiceRegistrar, connection, midasFile, networkName, null);
+		PreprocessTaskFactory preprocess = new PreprocessTaskFactory(cyServiceRegistrar, connection, midasFile, networkName);
 		CommandExecutor.execute(preprocess.createTaskIterator(), cyServiceRegistrar);
 		
 		
