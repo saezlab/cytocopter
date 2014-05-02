@@ -62,7 +62,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	@Override
 	public void run (TaskMonitor taskMonitor) throws Exception {
 		
-		taskMonitor.setTitle("Cytocopter - Preprocess...");
+		taskMonitor.setTitle("Cytocopter - Preprocessing...");
 		
 		// Check if connection is established
 		if (connection == null) connection = new RserveHandler(cyServiceRegistrar);
@@ -158,11 +158,11 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		// Add time signals to ComboBoxModel if in GUI context
 		if (dataPointCombo != null) {
 			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
-			for (Double timePoint : timeSignals) {
-				dataPointModel.addElement(timePoint.toString());
+
+			for (int i = 1; i < timeSignals.length; i++) {
+				dataPointModel.addElement(timeSignals[i]);
 			}
 			
-			dataPointCombo.setEnabled(true);
 			dataPointCombo.setModel(dataPointModel);
 		}
 		

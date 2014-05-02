@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.batik.swing.JSVGCanvas;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -27,8 +28,8 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
-import uk.ac.ebi.cyrface.internal.utils.SVGPlots;
 import uk.ac.ebi.cyrface.internal.utils.PlotsDialog.Attributes;
+import uk.ac.ebi.cyrface.internal.utils.SVGPlots;
 
 @SuppressWarnings("serial")
 public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent {
@@ -41,6 +42,8 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 	private JButton nextPlot;
 
 	private JPanel plotPanel;
+	private JSVGCanvas canvas;
+	private SVGPlots plot;
 
 	private JTextArea logPanel;
 
@@ -177,12 +180,22 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 	 * @throws Exception
 	 */
 	public void showPlot (File plotFile) throws Exception {
-		plotPanel.removeAll();
-
-		SVGPlots plot = new SVGPlots(plotFile);
-		plotPanel.add(plot.createPlotPanel(), BorderLayout.CENTER);
+		clearPlotPanel();
+		
+		plot = new SVGPlots(plotFile);
+		canvas = plot.createPlotPanel();
+		
+		plotPanel.add(canvas, BorderLayout.CENTER);		
 
 		showPanel();
+	}
+	
+	public void clearPlotPanel () {
+		if (canvas != null) {
+			plotPanel.remove(canvas);
+			canvas.removeAll();
+			canvas.dispose();
+		}
 	}
 
 	/** 

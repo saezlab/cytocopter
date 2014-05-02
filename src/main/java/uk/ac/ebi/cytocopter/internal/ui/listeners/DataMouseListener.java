@@ -12,6 +12,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 
 public class DataMouseListener implements MouseListener {
@@ -21,12 +22,14 @@ public class DataMouseListener implements MouseListener {
 	private JComboBox networkCombo;
 	private File selectedFile;
 	private JComboBox dataPointCombo;
+	private JComboBox formalismCombo;
 	
-	public DataMouseListener (JTextField dataTextField, JComboBox networkCombo, CyServiceRegistrar cyServiceRegistrar, JComboBox dataPointCombo) {
+	public DataMouseListener (JTextField dataTextField, JComboBox networkCombo, CyServiceRegistrar cyServiceRegistrar, JComboBox dataPointCombo, JComboBox formalismCombo) {
 		this.dataTextField = dataTextField;
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.networkCombo = networkCombo;
 		this.dataPointCombo = dataPointCombo;
+		this.formalismCombo = formalismCombo;
 	}
 	
 	@Override
@@ -46,7 +49,12 @@ public class DataMouseListener implements MouseListener {
 			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(cyServiceRegistrar, selectedFile.getAbsolutePath(), network, dataPointCombo);    			
 			cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
 		}
-		
+
+		if (formalismCombo.getSelectedItem().toString().equalsIgnoreCase(FormalismEnum.BOOLEAN.name()) && dataPointCombo.getItemCount() > 1) {
+			dataPointCombo.setEnabled(true);
+		} else {
+			dataPointCombo.setEnabled(false);
+		}
 	}
 
 	@Override

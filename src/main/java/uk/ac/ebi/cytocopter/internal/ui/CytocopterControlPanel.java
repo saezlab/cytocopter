@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
@@ -152,7 +154,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	
 	private void initialiseDataRow () {
 		// Add listener
-		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar, dataPointCombo));
+		dataTextField.addMouseListener(new DataMouseListener(dataTextField, networkCombo, cyServiceRegistrar, dataPointCombo, formalismCombo));
 	}
 	
 	private void createFormalismRow (GridBagConstraints c) {
@@ -176,6 +178,18 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 			formalismModel.addElement(formalism.getName());
 		
 		formalismCombo.setModel(formalismModel);
+		
+		// Add Listener
+		formalismCombo.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				if (formalismCombo.getModel().getSelectedItem().equals(FormalismEnum.BOOLEAN.name()) && dataPointCombo.getModel().getSize() > 1) {
+					dataPointCombo.setEnabled(true);
+				} else {
+					dataPointCombo.setEnabled(false);
+				}
+			}
+		});
 	}
 	
 	private void createTimePointsRows (GridBagConstraints c) {
