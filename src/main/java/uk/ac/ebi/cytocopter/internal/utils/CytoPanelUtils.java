@@ -10,8 +10,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class CytoPanelUtils {
 
-	public static CytoPanelComponent getCytoPanel (CyServiceRegistrar cyServiceRegistrar, Class<? extends CytoPanelComponent> panelClass) {
-		CytoPanel cytoPanel = cyServiceRegistrar.getService(CySwingApplication.class).getCytoPanel(CytoPanelName.EAST);
+	public static CytoPanelComponent getCytoPanel (CyServiceRegistrar cyServiceRegistrar, Class<? extends CytoPanelComponent> panelClass, CytoPanelName panelName) {
+		CytoPanel cytoPanel = cyServiceRegistrar.getService(CySwingApplication.class).getCytoPanel(panelName);
 		
 		for (int i = 0; i < cytoPanel.getCytoPanelComponentCount(); i++) {
 			Component panel = cytoPanel.getComponentAt(i);

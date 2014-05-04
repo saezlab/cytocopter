@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 
 import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -24,10 +25,17 @@ import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
 public class PreprocessTask extends AbstractTask implements ObservableTask {
 
+	private boolean useControlPanel;
+	private boolean displayResults;
+	
 	private CyServiceRegistrar cyServiceRegistrar;
+	
 	private RserveHandler connection;
+	
+	private CytocopterControlPanel controlPanel;
+	private CytocopterResultsPanel resultsPanel;
+
 	private StringBuilder outputString;
-	private CytocopterControlPanel contorlPanel;
 
 	@Tunable(description="midasFile", context="nogui")
     public String midasFile = "";
@@ -36,25 +44,11 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
     public String networkName = "";
 	
 	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar) {
-		this (cyServiceRegistrar, null, null, null, null);
-	}
-	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection) {
-		this(cyServiceRegistrar, connection, null, null, null);
-	}
-	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, String midasFile, String networkName, CytocopterControlPanel contorlPanel) {
-		this(cyServiceRegistrar, null, midasFile, networkName, contorlPanel);
-	}
-	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection, String midasFile, String networkName, CytocopterControlPanel contorlPanel) {
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
+		this.useControlPanel = useControlPanel;
+		this.displayResults = displayResults;
 		this.outputString = new StringBuilder();
-		this.connection = connection;
-		this.midasFile = midasFile;
-		this.networkName = networkName;
-		this.contorlPanel = contorlPanel;
 	}
 	
 	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
@@ -64,11 +58,27 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		taskMonitor.setTitle("Cytocopter - Preprocessing...");
 		
+		// Get necessary attributes from control panel otherwise from tunables.
+		if (useControlPanel) {
+			controlPanel = (CytocopterControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterControlPanel.class, CytoPanelName.WEST);
+			resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class, CytoPanelName.EAST);
+			
+			connection = controlPanel.connection;
+			
+			networkName = controlPanel.getNetworkValue();
+			midasFile = controlPanel.getMidasFilePath();
+		}
+		
 		// Check if connection is established
-		if (connection == null) connection = new RserveHandler(cyServiceRegistrar);
+		if (connection == null) {
+			connection = new RserveHandler(cyServiceRegistrar);
+			
+			// Save connection in control panel
+			if (useControlPanel) controlPanel.connection = connection;
+		}
 
 		// Configure CellNOptR R package
-		ConfigureCellnoptrTaskFactory configureCellnoptr = new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, connection);
+		ConfigureCellnoptrTaskFactory configureCellnoptr = new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, true);
 		CommandExecutor.execute(configureCellnoptr.createTaskIterator(), cyServiceRegistrar);
 		
 		// Focus selected network
@@ -165,25 +175,33 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		outputString.append(finderIndicesOutput);
 		outputString.append(findNONCOutput);
 		
-		// If GUI context
-		if (contorlPanel != null) {
+		// Display results if in gui context
+		if (displayResults) displayResults(cnolistPlot, timeSignals);
 			
-			// Create model for data point combo box
-			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
-			for (int i = 1; i < timeSignals.length; i++)
-				dataPointModel.addElement(timeSignals[i]);
-			
-			// Set combo box model and check status of time point combo box
-			contorlPanel.dataPointCombo.setModel(dataPointModel);
-			contorlPanel.setTimePointComboBoxStatus();
-			
-			// Add plot to results panel
-			CytocopterResultsPanel resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class);
-			resultsPanel.appendSVGPlot(cnolistPlot);
-			
-			// Append output to log panel in CytocopterResultsPanel
-			resultsPanel.appendLog(outputString.toString());
-		}
+	}
+	
+	/**
+	 * This method adds the data plot to the results panel and updates the data time points JComboBox
+	 * 
+	 * @param cnolistPlot
+	 * @param timeSignals
+	 * @throws Exception
+	 */
+	private void displayResults (File cnolistPlot, double[] timeSignals) throws Exception {
+		// Create model for data point combo box
+		DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
+		for (int i = 1; i < timeSignals.length; i++)
+			dataPointModel.addElement(timeSignals[i]);
+		
+		// Set combo box model and check status of time point combo box
+		controlPanel.dataPointCombo.setModel(dataPointModel);
+		controlPanel.setTimePointComboBoxStatus();
+		
+		// Add plot to results panel
+		resultsPanel.appendSVGPlot(cnolistPlot);
+		
+		// Append output to log panel in CytocopterResultsPanel
+		resultsPanel.appendLog(outputString.toString());
 	}
 	
 	private Collection<String> intersect (String[] list1, String[] list2) {

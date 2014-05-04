@@ -1,46 +1,24 @@
 package uk.ac.ebi.cytocopter.internal.ui.listeners;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.swing.DialogTaskManager;
 
-public class RunButtonMouseListener implements MouseListener {
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
+import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 
-	private CyServiceRegistrar cyServiceRegistrar;
+public class RunButtonMouseListener implements ActionListener {
+
+	private CytocopterControlPanel controlPanel;
 	
-	public RunButtonMouseListener (CyServiceRegistrar cyServiceRegistrar) {
-		this.cyServiceRegistrar= cyServiceRegistrar;
-	}
-	
-	@Override
-	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public RunButtonMouseListener (CytocopterControlPanel controlPanel) {
+		this.controlPanel= controlPanel;
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void actionPerformed(ActionEvent e) {
+		OptimiseTaskFactory optimiseTaskFactory = new OptimiseTaskFactory(controlPanel.cyServiceRegistrar, true);
+		controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(optimiseTaskFactory.createTaskIterator());
 	}
-
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

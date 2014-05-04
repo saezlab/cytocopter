@@ -2,7 +2,6 @@ package uk.ac.ebi.cytocopter.internal.ui.listeners;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
 
 import javax.swing.JFileChooser;
 
@@ -14,29 +13,25 @@ import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 
 public class DataMouseListener implements MouseListener {
 
-	private CytocopterControlPanel contorlPanel;
-	private File selectedFile;
+	private CytocopterControlPanel controlPanel;
 
 	public DataMouseListener (CytocopterControlPanel controlPanel) {
-		this.contorlPanel = controlPanel;
+		this.controlPanel = controlPanel;
 	}
 
 	@Override
 	public void mouseClicked (MouseEvent event) {
 		try {
-			JFileChooser fc = new JFileChooser(selectedFile);
+			JFileChooser fc = new JFileChooser(controlPanel.dataFile);
 			fc.addChoosableFileFilter(new FileChooserFilter("MIDAS", "csv"));
 
-			String network = (String) contorlPanel.networkCombo.getSelectedItem();
-
 			int chooseFileReturn = fc.showOpenDialog(null);
-			if (network != null && chooseFileReturn == JFileChooser.APPROVE_OPTION) {
-				selectedFile  = fc.getSelectedFile();
-				contorlPanel.dataTextField.setText(selectedFile.getName());
+			if (controlPanel.getNetworkValue() != null && chooseFileReturn == JFileChooser.APPROVE_OPTION) {
+				controlPanel.dataFile  = fc.getSelectedFile();
+				controlPanel.dataTextField.setText(controlPanel.dataFile.getName());
 
-				PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(contorlPanel, selectedFile, network);
-
-				contorlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
+				PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, true);
+				controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
 			}
 			
 		} catch (Exception e) {

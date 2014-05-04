@@ -4,25 +4,19 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
-
 public class ConfigureCellnoptrTaskFactory implements TaskFactory {
 
 	private CyServiceRegistrar cyServiceRegistrar;
-	private RserveHandler connection;
+	private boolean useControlPanel;
 	
-	public ConfigureCellnoptrTaskFactory (CyServiceRegistrar cyServiceRegistrar) {
-		this(cyServiceRegistrar, null);
-	}
-	
-	public ConfigureCellnoptrTaskFactory (CyServiceRegistrar cyServiceRegistrar, RserveHandler connection) {
+	public ConfigureCellnoptrTaskFactory (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
-		this.connection = connection;
+		this.useControlPanel = useControlPanel;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		ConfigureCellnoptrTask task = new ConfigureCellnoptrTask(cyServiceRegistrar, connection);
+		ConfigureCellnoptrTask task = new ConfigureCellnoptrTask(cyServiceRegistrar, useControlPanel);
 		return new TaskIterator(task);
 	}
 

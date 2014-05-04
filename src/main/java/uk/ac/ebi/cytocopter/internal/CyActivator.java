@@ -13,6 +13,7 @@ import org.osgi.framework.BundleContext;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.CytocopterCommandsEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFactory;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
@@ -36,7 +37,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bundleContext, action, new Properties());
 
 		registerPanels();
-		registerCyrfaceCommands();
+		registerCytocopterCommands();
 		loadVisualStyle();
 	}
 		
@@ -45,15 +46,18 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bundleContext, new CytocopterResultsPanel(cyServiceRegistrar), CytoPanelComponent.class, new Properties());
 	}
 	
-	private void registerCyrfaceCommands () {
+	private void registerCytocopterCommands () {
 		Properties props = new Properties();
 		props.setProperty(ServiceProperties.COMMAND_NAMESPACE, CytocopterCommandsEnum.CYTOCOPTER_NAME_SPACE);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.CONFIGURE.getName());
-		registerService(bundleContext, new ConfigureCellnoptrTaskFactory(cyServiceRegistrar), TaskFactory.class, props);
+		registerService(bundleContext, new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, false), TaskFactory.class, props);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.PREPROCESS.getName());
-		registerService(bundleContext, new PreprocessTaskFactory(cyServiceRegistrar), TaskFactory.class, props);
+		registerService(bundleContext, new PreprocessTaskFactory(cyServiceRegistrar, false, false), TaskFactory.class, props);
+		
+		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.OPTIMISE.getName());
+		registerService(bundleContext, new OptimiseTaskFactory(cyServiceRegistrar, false), TaskFactory.class, props);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.NODETYPE.getName());
 		registerService(bundleContext, new SetNodeTypeTaskFactory(cyServiceRegistrar), TaskFactory.class, props);
