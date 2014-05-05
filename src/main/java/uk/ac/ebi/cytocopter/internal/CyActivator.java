@@ -16,8 +16,9 @@ import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFacto
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.LogPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -42,8 +43,9 @@ public class CyActivator extends AbstractCyActivator {
 	}
 		
 	private void registerPanels () {
-		registerService(bundleContext, new CytocopterControlPanel(cyServiceRegistrar), CytoPanelComponent.class, new Properties());
-		registerService(bundleContext, new CytocopterResultsPanel(cyServiceRegistrar), CytoPanelComponent.class, new Properties());
+		registerService(bundleContext, new ControlPanel(cyServiceRegistrar), CytoPanelComponent.class, new Properties());
+		registerService(bundleContext, new ResultsPanel(cyServiceRegistrar), CytoPanelComponent.class, new Properties());
+		registerService(bundleContext, new LogPanel(cyServiceRegistrar), CytoPanelComponent.class, new Properties());
 	}
 	
 	private void registerCytocopterCommands () {
@@ -54,7 +56,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bundleContext, new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, false), TaskFactory.class, props);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.PREPROCESS.getName());
-		registerService(bundleContext, new PreprocessTaskFactory(cyServiceRegistrar, false, false), TaskFactory.class, props);
+		registerService(bundleContext, new PreprocessTaskFactory(cyServiceRegistrar, false, false, true), TaskFactory.class, props);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.OPTIMISE.getName());
 		registerService(bundleContext, new OptimiseTaskFactory(cyServiceRegistrar, false), TaskFactory.class, props);

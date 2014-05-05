@@ -8,13 +8,13 @@ import org.cytoscape.work.TaskMonitor;
 
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
 import uk.ac.ebi.cyrface.internal.utils.BioconductorPackagesEnum;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
 public class ConfigureCellnoptrTask extends AbstractTask implements ObservableTask {
 
 	private boolean useControlPanelModel;
-	private CytocopterControlPanel controlPanel;
+	private ControlPanel controlPanel;
 	
 	private CyServiceRegistrar cyServiceRegistrar;
 	
@@ -34,7 +34,7 @@ public class ConfigureCellnoptrTask extends AbstractTask implements ObservableTa
 		
 		// Check if to use control panel model
 		if (useControlPanelModel) {
-			controlPanel = (CytocopterControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterControlPanel.class, CytoPanelName.WEST);
+			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class, CytoPanelName.WEST);
 			
 			if (controlPanel.connection == null) 
 				controlPanel.connection = new RserveHandler(cyServiceRegistrar);

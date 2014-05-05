@@ -23,4 +23,13 @@ public class CytoPanelUtils {
 		return null;
 	}
 	
+	public static CytoPanelComponent getCytoPanel (CyServiceRegistrar cyServiceRegistrar, Class<? extends CytoPanelComponent> panelClass) {
+		for (CytoPanelName panelName : CytoPanelName.values()) {
+			CytoPanelComponent panel = getCytoPanel(cyServiceRegistrar, panelClass, panelName);
+			if (panel != null) return panel;
+			
+		}
+		return null;
+	}
+	
 }

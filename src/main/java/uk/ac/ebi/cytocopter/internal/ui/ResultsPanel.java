@@ -32,7 +32,7 @@ import uk.ac.ebi.cyrface.internal.utils.PlotsDialog.Attributes;
 import uk.ac.ebi.cyrface.internal.utils.SVGPlots;
 
 @SuppressWarnings("serial")
-public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent {
+public class ResultsPanel extends JPanel implements CytoPanelComponent {
 
 	private CyServiceRegistrar cyServiceRegistrar;
 
@@ -45,19 +45,14 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 	private JSVGCanvas canvas;
 	private SVGPlots plot;
 
-	private JTextArea logPanel;
-
 	private List<File> plotList;
 	private int currentPlotIndex;
 
-	private StringBuilder logText;
 
-
-	public CytocopterResultsPanel (CyServiceRegistrar cyServiceRegistrar) {
+	public ResultsPanel (CyServiceRegistrar cyServiceRegistrar) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 
 		plotList = new ArrayList<File>();
-		logText = new StringBuilder();
 
 		// Define Panel properties
 		setLayout(new BorderLayout());
@@ -67,7 +62,6 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 		// Create Panels
 		createNorthPanel();
 		createCentrePanel();
-		createSouthPanel();
 
 		// Initialise Panels
 		initialiseNorthPanel();
@@ -89,18 +83,6 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 	private void createCentrePanel () {
 		plotPanel = new JPanel(new BorderLayout());
 		add(plotPanel, BorderLayout.CENTER);
-	}
-
-	private void createSouthPanel () {
-		logPanel = new JTextArea(logText.toString());
-		logPanel.setEditable(false);
-		logPanel.setRows(15);
-		logPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-		JScrollPane scrollLogPanel = new JScrollPane(logPanel);
-		scrollLogPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-		add(scrollLogPanel, BorderLayout.SOUTH);
 	}
 
 	private void initialiseNorthPanel () {
@@ -225,17 +207,6 @@ public class CytocopterResultsPanel extends JPanel implements CytoPanelComponent
 		currentPlotIndex = plotList.size() - 1;
 		showPlot(plotFile);
 	}
-
-	/**
-	 * Appends the given log text to the existing log.
-	 * 
-	 * @param log
-	 */
-	public void appendLog (String log) {
-		logText.append(log);
-		logPanel.setText(logText.toString());
-	}
-
 
 	@Override
 	public Component getComponent() {

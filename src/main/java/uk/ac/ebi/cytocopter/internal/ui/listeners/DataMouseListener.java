@@ -7,13 +7,13 @@ import javax.swing.JFileChooser;
 
 import org.cytoscape.util.swing.FileChooserFilter;
 
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
 
 public class DataMouseListener implements MouseListener {
 
-	private CytocopterControlPanel controlPanel;
+	private ControlPanel controlPanel;
 
-	public DataMouseListener (CytocopterControlPanel controlPanel) {
+	public DataMouseListener (ControlPanel controlPanel) {
 		this.controlPanel = controlPanel;
 	}
 

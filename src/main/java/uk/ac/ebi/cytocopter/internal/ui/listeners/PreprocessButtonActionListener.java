@@ -6,20 +6,19 @@ import java.awt.event.ActionListener;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
 
 public class PreprocessButtonActionListener implements ActionListener {
 
-	private CytocopterControlPanel controlPanel;
+	private ControlPanel controlPanel;
 
-	public PreprocessButtonActionListener (CytocopterControlPanel controlPanel) {
+	public PreprocessButtonActionListener (ControlPanel controlPanel) {
 		this.controlPanel = controlPanel;
 	}
 
-	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, true);
+		PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, true, true);
 		controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
 	}
 

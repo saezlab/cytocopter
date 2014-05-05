@@ -1,5 +1,7 @@
 package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
+import java.io.File;
+
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
@@ -10,8 +12,8 @@ import org.cytoscape.work.Tunable;
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
@@ -23,8 +25,8 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 	
 	private RserveHandler connection;
 	
-	private CytocopterControlPanel controlPanel;
-	private CytocopterResultsPanel resultsPanel;
+	private ControlPanel controlPanel;
+	private ResultsPanel resultsPanel;
 
 	private StringBuilder outputString;
 	
@@ -55,8 +57,8 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 
 		// Get necessary attributes from control panel otherwise from tunables.
 		if (useControlPanel) {
-			controlPanel = (CytocopterControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterControlPanel.class, CytoPanelName.WEST);
-			resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class, CytoPanelName.EAST);
+			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class, CytoPanelName.WEST);
+			resultsPanel = (ResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ResultsPanel.class, CytoPanelName.EAST);
 			
 			formalism = controlPanel.getFormalismValue();
 			timePoint = controlPanel.getTimePointValue();
@@ -71,14 +73,14 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 			
 			// Save connection in control panel
 			if (useControlPanel) controlPanel.connection = connection;
-			
-			// Run CellNOptR R package preprocess
-			PreprocessTaskFactory preprocess = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, true);
-			CommandExecutor.execute(preprocess.createTaskIterator(), cyServiceRegistrar);
 		}
 		
-		double numberOfTimePoints = connection.executeReceiveDouble("length(cnolist$timeSignals)");
+		// Run CellNOptR R package preprocess
+		PreprocessTaskFactory preprocess = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, false, false);
+		CommandExecutor.execute(preprocess.createTaskIterator(), cyServiceRegistrar);
 		
+		// Check number of time points in the data
+		double numberOfTimePoints = connection.executeReceiveDouble("length(cnolist$timeSignals)");
 		if (numberOfTimePoints > 2 && formalism.equals(FormalismEnum.BOOLEAN.getName()) && timePoint == null)
 			throw new Exception("Time point undefined: Boolean formalism and data time points bigger than 2");
 		
@@ -104,7 +106,16 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		
 		connection.execute(optimisationCommand.toString());
 		
+		// Retrive fitness plot
+		String plotFitnessCommand = "plotFit(optRes = optresult)";
+		File fitnessPlot = connection.executeReceivePlotFile(plotFitnessCommand, "cnolist");
 		
+		// Retrive fit plot
+		String plotFitCommand = "cutAndPlotResultsT1(model = cutcompexp, bString = optresult$bString, simList = fields4Sim, CNOlist = cnolist, indexList = indicescutcomp, plotPDF = F)";
+		File cnolistFitPlot = connection.executeReceivePlotFile(plotFitCommand, "cnolist");
+		
+		// Add plot to results panel
+		resultsPanel.appendSVGPlot(cnolistFitPlot);
 	}
 	
 	@Override

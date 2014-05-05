@@ -40,7 +40,7 @@ import uk.ac.ebi.cytocopter.internal.ui.listeners.OptimiseButtonActionListener;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.PreprocessButtonActionListener;
 
 @SuppressWarnings("serial")
-public class CytocopterControlPanel extends JPanel implements CytoPanelComponent {
+public class ControlPanel extends JPanel implements CytoPanelComponent {
 
 	public CyServiceRegistrar cyServiceRegistrar;
 	public RserveHandler connection;
@@ -68,7 +68,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	public Map<String, JTextField> configurationsMap;
 	
 	
-	public CytocopterControlPanel (CyServiceRegistrar cyServiceRegistrar) {
+	public ControlPanel (CyServiceRegistrar cyServiceRegistrar) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.configurationsMap = new HashMap<String, JTextField>();
 		

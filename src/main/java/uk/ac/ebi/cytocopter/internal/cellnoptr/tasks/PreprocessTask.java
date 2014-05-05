@@ -19,21 +19,24 @@ import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
-import uk.ac.ebi.cytocopter.internal.ui.CytocopterResultsPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.LogPanel;
+import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
 public class PreprocessTask extends AbstractTask implements ObservableTask {
 
 	private boolean useControlPanel;
 	private boolean displayResults;
+	private boolean displayNetworkAnnotation;
 	
 	private CyServiceRegistrar cyServiceRegistrar;
 	
 	private RserveHandler connection;
 	
-	private CytocopterControlPanel controlPanel;
-	private CytocopterResultsPanel resultsPanel;
+	private ControlPanel controlPanel;
+	private ResultsPanel resultsPanel;
+	private LogPanel logPanel;
 
 	private StringBuilder outputString;
 
@@ -44,7 +47,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
     public String networkName = "";
 	
 	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults) {
+	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults, boolean displayNetworkAnnotation) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.useControlPanel = useControlPanel;
 		this.displayResults = displayResults;
@@ -60,8 +63,9 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		// Get necessary attributes from control panel otherwise from tunables.
 		if (useControlPanel) {
-			controlPanel = (CytocopterControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterControlPanel.class, CytoPanelName.WEST);
-			resultsPanel = (CytocopterResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, CytocopterResultsPanel.class, CytoPanelName.EAST);
+			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class, CytoPanelName.WEST);
+			resultsPanel = (ResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ResultsPanel.class, CytoPanelName.EAST);
+			logPanel = (LogPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, LogPanel.class, CytoPanelName.SOUTH);
 			
 			connection = controlPanel.connection;
 			
@@ -145,26 +149,12 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		// Get node types
 		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
-		NetworkAttributes.addAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
-		
 		String[] inhibitorsArray = connection.executeReceiveStrings("cnolist$namesInhibitors");
-		NetworkAttributes.addAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
-		
 		String[] readoutArray = connection.executeReceiveStrings("cnolist$namesSignals");
-		NetworkAttributes.addAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
-		
 		String[] compressedArray = connection.executeReceiveStrings("cutcompexp$speciesCompressed");
-		NetworkAttributes.addAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
-		
-		Collection<String> inhibitedReadouts = intersect(inhibitorsArray, readoutArray);
-		NetworkAttributes.addAttribute(networkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
 		
 		// Get time signals
 		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
-		
-		// Apply visual style
-		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
-		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
 		
 		// Add output
 		outputString.append("---- Cytocopter Preprocessing" + "\n");
@@ -175,33 +165,41 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		outputString.append(finderIndicesOutput);
 		outputString.append(findNONCOutput);
 		
-		// Display results if in gui context
-		if (displayResults) displayResults(cnolistPlot, timeSignals);
+		// Annotate selected network
+		if (displayNetworkAnnotation) {
+			// Identify inhibited readouts
+			Collection<String> inhibitedReadouts = intersect(inhibitorsArray, readoutArray);
 			
-	}
-	
-	/**
-	 * This method adds the data plot to the results panel and updates the data time points JComboBox
-	 * 
-	 * @param cnolistPlot
-	 * @param timeSignals
-	 * @throws Exception
-	 */
-	private void displayResults (File cnolistPlot, double[] timeSignals) throws Exception {
-		// Create model for data point combo box
-		DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
-		for (int i = 1; i < timeSignals.length; i++)
-			dataPointModel.addElement(timeSignals[i]);
+			// Add aatributes to nodes
+			NetworkAttributes.addAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
+			NetworkAttributes.addAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
+			NetworkAttributes.addAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
+			NetworkAttributes.addAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
+			NetworkAttributes.addAttribute(networkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
+			
+			// Apply visual style
+			String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
+			CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
+		}
 		
-		// Set combo box model and check status of time point combo box
-		controlPanel.dataPointCombo.setModel(dataPointModel);
-		controlPanel.setTimePointComboBoxStatus();
-		
-		// Add plot to results panel
-		resultsPanel.appendSVGPlot(cnolistPlot);
-		
-		// Append output to log panel in CytocopterResultsPanel
-		resultsPanel.appendLog(outputString.toString());
+		// Display results if in gui context
+		if (displayResults) {
+			// Create model for data point combo box
+			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
+			for (int i = 1; i < timeSignals.length; i++)
+				dataPointModel.addElement(timeSignals[i]);
+			
+			// Set combo box model and check status of time point combo box
+			controlPanel.dataPointCombo.setModel(dataPointModel);
+			controlPanel.setTimePointComboBoxStatus();
+			
+			// Add plot to results panel
+			resultsPanel.appendSVGPlot(cnolistPlot);
+			
+			// Append output to log panel
+			logPanel.appendLog(outputString.toString());
+		}
+			
 	}
 	
 	private Collection<String> intersect (String[] list1, String[] list2) {

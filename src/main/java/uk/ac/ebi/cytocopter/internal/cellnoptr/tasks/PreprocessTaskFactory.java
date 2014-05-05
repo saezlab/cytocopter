@@ -9,16 +9,18 @@ public class PreprocessTaskFactory implements TaskFactory {
 	private CyServiceRegistrar cyServiceRegistrar;
 	private boolean useControlPanel;
 	private boolean displayResults;
+	private boolean displayNetworkAnnotation;
 	
-	public PreprocessTaskFactory (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults) {
+	public PreprocessTaskFactory (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults, boolean displayNetworkAnnotation) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.useControlPanel = useControlPanel;
 		this.displayResults = displayResults;
+		this.displayNetworkAnnotation = displayNetworkAnnotation;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		PreprocessTask task = new PreprocessTask(cyServiceRegistrar, useControlPanel, displayResults);
+		PreprocessTask task = new PreprocessTask(cyServiceRegistrar, useControlPanel, displayResults, displayNetworkAnnotation);
 		return new TaskIterator(task);
 	}
 
