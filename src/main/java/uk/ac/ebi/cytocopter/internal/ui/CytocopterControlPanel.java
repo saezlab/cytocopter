@@ -36,7 +36,8 @@ import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.DataMouseListener;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxAddedNetwork;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxRemovedNetwork;
-import uk.ac.ebi.cytocopter.internal.ui.listeners.RunButtonMouseListener;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.OptimiseButtonActionListener;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.PreprocessButtonActionListener;
 
 @SuppressWarnings("serial")
 public class CytocopterControlPanel extends JPanel implements CytoPanelComponent {
@@ -51,6 +52,8 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	public JLabel dataLabel;
 	public JTextField dataTextField;
 	public File dataFile;
+	
+	public JButton preprocessButton;
 	
 	public JLabel formalismLabel;
 	public JComboBox formalismCombo;
@@ -79,7 +82,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	private void createPanelLayout () {
 		// Define panel layout
 		GridBagLayout layout = new GridBagLayout();
-		layout.columnWidths = new int[]{70, 130, 130};
+		layout.columnWidths = new int[]{70, 110, 110};
 
 		setLayout(layout);
 		setSize(new Dimension(450, 400));
@@ -97,22 +100,26 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 
 		c.gridy = 1;
 		createDataRow (c);
-
+		
 		c.gridy = 2;
-		createFormalismRow (c);
+		createPreprocessButtonRow (c);
 
 		c.gridy = 3;
-		createTimePointsRows (c);
+		createFormalismRow (c);
 
 		c.gridy = 4;
-		createOptimiseButtonRow (c);
+		createTimePointsRows (c);
 
 		c.gridy = 5;
+		createOptimiseButtonRow (c);
+
+		c.gridy = 6;
 		createAlgorithmConfigurations (c);
 
 		// Add components listeners
 		initialiseNetworkRow();
 		initialiseDataRow();
+		initialisePreprocessButtonRow();
 		intialiseFormalismRow();
 		initialiseTimePointsRows();
 		initialiseOptimiseButtonRow();
@@ -147,6 +154,12 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		add(dataTextField, c);
 	}
 	
+	private void createPreprocessButtonRow (GridBagConstraints c) {
+		c.gridx = 2;
+		c.gridwidth = 1;
+		preprocessButton = new JButton("Preprocess");
+		add(preprocessButton, c);
+	}
 	
 	private void createFormalismRow (GridBagConstraints c) {
 		formalismLabel = new JLabel("Formalism");
@@ -174,6 +187,8 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	}
 	
 	private void createOptimiseButtonRow (GridBagConstraints c) {
+		c.gridx = 2;
+		c.gridwidth = 1;
 		optimiseButton = new JButton("Optimise");
 		add(optimiseButton, c);
 	}
@@ -183,7 +198,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		c.gridwidth = 1;
 		
 		GridBagLayout algorithmLayout = new GridBagLayout();
-		algorithmLayout.columnWidths = new int[]{70, 95, 70, 95};
+		algorithmLayout.columnWidths = new int[]{70, 75, 70, 75};
 		
 		algorithmPanel = new JPanel(algorithmLayout);
 		algorithmPanel.setBorder(new TitledBorder(new LineBorder(Color.black, 1), "Configurations"));
@@ -253,6 +268,10 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 		dataTextField.addMouseListener(new DataMouseListener(this));
 	}
 	
+	private void initialisePreprocessButtonRow () {
+		preprocessButton.addActionListener(new PreprocessButtonActionListener(this));
+	}
+	
 	private void intialiseFormalismRow () {		
 		// Fill combo box
 		formalismModel = new DefaultComboBoxModel();
@@ -281,7 +300,7 @@ public class CytocopterControlPanel extends JPanel implements CytoPanelComponent
 	}
 	
 	private void initialiseOptimiseButtonRow () {
-		optimiseButton.addActionListener(new RunButtonMouseListener(this));
+		optimiseButton.addActionListener(new OptimiseButtonActionListener(this));
 	}
 	
 	private void initialiseAlgorithmConfigurations () {}

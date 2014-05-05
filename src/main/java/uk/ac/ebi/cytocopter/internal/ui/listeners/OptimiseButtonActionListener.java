@@ -8,11 +8,11 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 
-public class RunButtonMouseListener implements ActionListener {
+public class OptimiseButtonActionListener implements ActionListener {
 
 	private CytocopterControlPanel controlPanel;
 	
-	public RunButtonMouseListener (CytocopterControlPanel controlPanel) {
+	public OptimiseButtonActionListener (CytocopterControlPanel controlPanel) {
 		this.controlPanel= controlPanel;
 	}
 

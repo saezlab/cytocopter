@@ -6,9 +6,7 @@ import java.awt.event.MouseListener;
 import javax.swing.JFileChooser;
 
 import org.cytoscape.util.swing.FileChooserFilter;
-import org.cytoscape.work.swing.DialogTaskManager;
 
-import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.ui.CytocopterControlPanel;
 
 public class DataMouseListener implements MouseListener {
@@ -29,9 +27,6 @@ public class DataMouseListener implements MouseListener {
 			if (controlPanel.getNetworkValue() != null && chooseFileReturn == JFileChooser.APPROVE_OPTION) {
 				controlPanel.dataFile  = fc.getSelectedFile();
 				controlPanel.dataTextField.setText(controlPanel.dataFile.getName());
-
-				PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, true);
-				controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(preprocessTaskFactory.createTaskIterator());
 			}
 			
 		} catch (Exception e) {

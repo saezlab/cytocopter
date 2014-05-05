@@ -72,12 +72,8 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 			// Save connection in control panel
 			if (useControlPanel) controlPanel.connection = connection;
 			
-			// Configure CellNOptR R package
-			ConfigureCellnoptrTaskFactory configureCellnoptr = new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, true);
-			CommandExecutor.execute(configureCellnoptr.createTaskIterator(), cyServiceRegistrar);
-			
 			// Run CellNOptR R package preprocess
-			PreprocessTaskFactory preprocess = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, false);
+			PreprocessTaskFactory preprocess = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, true);
 			CommandExecutor.execute(preprocess.createTaskIterator(), cyServiceRegistrar);
 		}
 		
@@ -98,17 +94,17 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		
 		// Run optimisation
 		StringBuilder optimisationCommand = new StringBuilder("optresult <- gaBinaryT1(CNOlist = cnolist, model = cutcompexp, initBstring = bstring, ");
-		
 		for (AlgorithmConfigurationsEnum arg : AlgorithmConfigurationsEnum.values()) {
 			optimisationCommand.append(arg.getRArgName());
 			optimisationCommand.append(" = ");
 			optimisationCommand.append(controlPanel.getAlgorithmPropertyValue(arg));
 			optimisationCommand.append(", ");
 		}
-		
 		optimisationCommand.append("verbose = F)");
 		
 		connection.execute(optimisationCommand.toString());
+		
+		
 	}
 	
 	@Override
