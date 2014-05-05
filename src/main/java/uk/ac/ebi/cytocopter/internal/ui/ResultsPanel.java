@@ -14,9 +14,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.border.EmptyBorder;
 
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.commons.io.FileUtils;
@@ -56,8 +53,8 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent {
 
 		// Define Panel properties
 		setLayout(new BorderLayout());
-		setSize(new Dimension(650, 400));
-		setPreferredSize(new Dimension(650, 400));
+		setSize(new Dimension(600, 400));
+		setPreferredSize(new Dimension(600, 400));
 
 		// Create Panels
 		createNorthPanel();

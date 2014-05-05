@@ -1,6 +1,9 @@
 package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.TreeSet;
 
@@ -31,7 +34,6 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	private boolean displayNetworkAnnotation;
 	
 	private CyServiceRegistrar cyServiceRegistrar;
-	
 	private RserveHandler connection;
 	
 	private ControlPanel controlPanel;
@@ -39,6 +41,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	private LogPanel logPanel;
 
 	private StringBuilder outputString;
+	private DateFormat dateFormat;
 
 	@Tunable(description="midasFile", context="nogui")
     public String midasFile = "";
@@ -51,7 +54,9 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.useControlPanel = useControlPanel;
 		this.displayResults = displayResults;
+		this.displayNetworkAnnotation = displayNetworkAnnotation;
 		this.outputString = new StringBuilder();
+		this.dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 	}
 	
 	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
@@ -157,13 +162,15 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
 		
 		// Add output
-		outputString.append("---- Cytocopter Preprocessing" + "\n");
-		outputString.append("Network: " + networkName + ", MIDAS: " + FilenameUtils.getName(midasFile) + "\n"); 
+		outputString.append("[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Preprocessing" + "\n");
+		outputString.append("Network: " + networkName + "\n");
+		outputString.append("MIDAS: " + FilenameUtils.getName(midasFile) + "\n");
 		outputString.append(loadModelOutput);
 		outputString.append(loadMidasOutput);
 		outputString.append(createCNOListOutput);
 		outputString.append(finderIndicesOutput);
 		outputString.append(findNONCOutput);
+		outputString.append("\n");
 		
 		// Annotate selected network
 		if (displayNetworkAnnotation) {
