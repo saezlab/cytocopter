@@ -1,5 +1,6 @@
 package uk.ac.ebi.cytocopter.internal.utils;
 
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
@@ -35,5 +36,9 @@ public class CyNetworkUtils {
 		
 		return null;
 	}
-	
+
+	public static List<CyEdge> getCyEdges (CyServiceRegistrar cyServiceRegistrar, String cyNetworkName) {
+		CyNetwork cyNetwork = getCyNetwork(cyServiceRegistrar, cyNetworkName);
+		return cyNetwork.getEdgeList();
+	}
 }

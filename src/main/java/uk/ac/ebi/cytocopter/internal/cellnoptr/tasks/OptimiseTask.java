@@ -1,8 +1,13 @@
 package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.List;
 
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.work.AbstractTask;
@@ -11,11 +16,15 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
+import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
 import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
+import uk.ac.ebi.cytocopter.internal.utils.CyNetworkUtils;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
 public class OptimiseTask extends AbstractTask implements ObservableTask {
@@ -119,11 +128,12 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		// Save optimised network to Scaffold.sif file
 		String writeOptmisedNetworkCommand = "writeScaffold(modelComprExpanded = cutcompexp, optimResT1 = optresult, optimResT2 = NA, modelOriginal = model, CNOlist = cnolist)";
 		connection.execute(writeOptmisedNetworkCommand);
-		File optimisedNetwork = connection.getFile("Scaffold.sif");
+		File optimisedNetworkFile = connection.getFile("Scaffold.sif");
+		String optimisedNetworkName = optimisedNetworkFile.getName();
 		
 		// Import optimised network
 		LoadNetworkFileTaskFactory loadNetworkTask = cyServiceRegistrar.getService(LoadNetworkFileTaskFactory.class);
-		CommandExecutor.execute(loadNetworkTask.createTaskIterator(optimisedNetwork), cyServiceRegistrar);
+		CommandExecutor.execute(loadNetworkTask.createTaskIterator(optimisedNetworkFile), cyServiceRegistrar);
 		
 		// Read optimised network edges weights
 		String readWeightsCommands = "edgesWeights <- read.table(file = 'weightsScaffold.EA', sep=' ', header=F,  skip=1)";
@@ -131,6 +141,50 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		
 		double[] edgesWeights = connection.executeReceiveDoubles("edgesWeights$V5");
 		String[] edgesNames = buildEdgesNames();
+		
+		// Get node types
+		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
+		String[] inhibitorsArray = connection.executeReceiveStrings("cnolist$namesInhibitors");
+		String[] readoutArray = connection.executeReceiveStrings("cnolist$namesSignals");
+		String[] compressedArray = connection.executeReceiveStrings("cutcompexp$speciesCompressed");
+
+		// Identify inhibited readouts
+		Collection<String> inhibitedReadouts = NodeTypeAttributeEnum.intersect(inhibitorsArray, readoutArray);
+		
+		// Add aatributes to nodes
+		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
+		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
+		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
+		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
+		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
+		
+		// Set Optimised network node types
+		CyNetwork optimisedNetwork = CyNetworkUtils.getCyNetwork(cyServiceRegistrar, optimisedNetworkName);
+		List<CyNode> optimisedNetworkNodes = optimisedNetwork.getNodeList();
+		
+		for (CyNode node : optimisedNetworkNodes) {
+			String nodeName = optimisedNetwork.getRow(node).get(CyNetwork.NAME, String.class);
+			String operator = NodeTypeAttributeEnum.isOperator(nodeName);
+			
+			if (operator != null) {
+				NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, nodeName, NodeTypeAttributeEnum.OPERATOR, cyServiceRegistrar);
+				NetworkAttributes.addNodeAttribute(optimisedNetwork, node, CyNetwork.NAME, operator, cyServiceRegistrar);
+			}
+		}
+		
+		// Set Optimised network edge weights
+		String edgeWeightAttribute = "Cytocopter.EdgeWeight";
+		
+		optimisedNetwork.getDefaultEdgeTable().createColumn(edgeWeightAttribute, Double.class, false);
+
+		for (int i = 0; i < edgesNames.length; i++) {
+			CyEdge edge = CyNetworkUtils.getCyEdge(optimisedNetwork, edgesNames[i]);
+			optimisedNetwork.getRow(edge).set(edgeWeightAttribute, edgesWeights[i]);
+		}
+		
+		// Apply visual style
+		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
+		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
 		
 		// Add plot to results panel
 		resultsPanel.appendSVGPlot(cnolistFitPlot);

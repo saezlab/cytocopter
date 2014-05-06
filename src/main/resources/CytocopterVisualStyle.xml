@@ -30,16 +30,24 @@
                 <passthroughMapping attributeType="string" attributeName="name"/>
             </visualProperty>
 
-            <visualProperty name="NODE_SHAPE" default="ROUND_RECTANGLE"/>
-
+            <visualProperty name="NODE_SHAPE" default="ROUND_RECTANGLE">
+                  <discreteMapping attributeType="string" attributeName="Cytocopter.NodeType">
+                        <discreteMappingEntry value="ROUND_RECTANGLE" attributeValue="stimulated"/>
+                        <discreteMappingEntry value="ROUND_RECTANGLE" attributeValue="inhibited"/>
+                        <discreteMappingEntry value="ROUND_RECTANGLE" attributeValue="readout"/>
+                        <discreteMappingEntry value="ROUND_RECTANGLE" attributeValue="compressed"/>
+                        <discreteMappingEntry value="ROUND_RECTANGLE" attributeValue="inhibited readout"/>
+                        <discreteMappingEntry value="ELLIPSE" attributeValue="operator"/>
+                  </discreteMapping>
+            </visualProperty>
             <visualProperty name="NODE_HEIGHT" default="20.0">
                   <discreteMapping attributeType="string" attributeName="Cytocopter.NodeType">
-                        <discreteMappingEntry value="4.0" attributeValue="operator"/>
+                        <discreteMappingEntry value="30.0" attributeValue="operator"/>
                   </discreteMapping>
             </visualProperty>
             <visualProperty name="NODE_WIDTH" default="50.0">
                   <discreteMapping attributeType="string" attributeName="Cytocopter.NodeType">
-                        <discreteMappingEntry value="4.0" attributeValue="operator"/>
+                        <discreteMappingEntry value="30.0" attributeValue="operator"/>
                   </discreteMapping>
             </visualProperty>
             <visualProperty name="NODE_SIZE" default="50.0"/>
@@ -59,7 +67,7 @@
 
             <visualProperty name="NODE_PAINT" default="#787878"/>
             <visualProperty name="NODE_TRANSPARENCY" default="255"/>
-            <visualProperty name="NODE_FILL_COLOR" default="#FFFFFF">            
+            <visualProperty name="NODE_FILL_COLOR" default="#FFFFFF">
                   <discreteMapping attributeType="string" attributeName="Cytocopter.NodeType">
                         <discreteMappingEntry value="#73B360" attributeValue="stimulated"/>
                         <discreteMappingEntry value="#E33E3E" attributeValue="inhibited"/>
@@ -134,7 +142,12 @@
             <dependency name="arrowColorMatchesEdge" value="false"/>
 
             <visualProperty name="EDGE_LINE_TYPE" default="SOLID"/>
-            <visualProperty name="EDGE_WIDTH" default="2.0"/>
+            <visualProperty name="EDGE_WIDTH" default="2.0">
+                <continuousMapping attributeType="float" attributeName="Cytocopter.EdgeWeight">
+                    <continuousMappingPoint lesserValue="1.0" greaterValue="0.15" equalValue="0.15" attrValue="0.0"/>
+                    <continuousMappingPoint lesserValue="4.0" greaterValue="1.0" equalValue="4.0" attrValue="1.0"/>
+                </continuousMapping>
+            </visualProperty>
 
             <visualProperty name="EDGE_PAINT" default="#808080"/>
             <visualProperty name="EDGE_TRANSPARENCY" default="255"/>

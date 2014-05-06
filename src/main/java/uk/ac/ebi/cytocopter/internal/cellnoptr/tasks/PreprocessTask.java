@@ -5,7 +5,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.TreeSet;
 
 import javax.swing.DefaultComboBoxModel;
 
@@ -175,7 +174,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		// Annotate selected network
 		if (displayNetworkAnnotation) {
 			// Identify inhibited readouts
-			Collection<String> inhibitedReadouts = intersect(inhibitorsArray, readoutArray);
+			Collection<String> inhibitedReadouts = NodeTypeAttributeEnum.intersect(inhibitorsArray, readoutArray);
 			
 			// Add aatributes to nodes
 			NetworkAttributes.addNodeTypeAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
@@ -209,17 +208,6 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 			
 	}
 	
-	private Collection<String> intersect (String[] list1, String[] list2) {
-		Collection<String> overlap = new TreeSet<String>();
-		
-		for (String element : list1)
-			for (String element2 : list2)
-				if (element.equals(element2))
-					overlap.add(element2);
-		
-		return overlap;
-	}
-
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		return type.cast(outputString.toString());
