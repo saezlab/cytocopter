@@ -18,8 +18,11 @@ public class NetworkComboBoxAddedNetwork implements NetworkAddedListener {
 	@Override
 	public void handleEvent(NetworkAddedEvent event) {
 		CyNetwork cyNetwork = event.getNetwork();
-		String cyNetworkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
-		((DefaultComboBoxModel)networkComboBox.getModel()).addElement(cyNetworkName);
+		
+		if (cyNetwork != null) { 
+			String cyNetworkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
+			((DefaultComboBoxModel)networkComboBox.getModel()).addElement(cyNetworkName);
+		}
 	}
 
 }

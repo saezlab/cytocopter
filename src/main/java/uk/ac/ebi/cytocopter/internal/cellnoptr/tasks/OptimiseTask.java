@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -60,6 +61,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class, CytoPanelName.WEST);
 			resultsPanel = (ResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ResultsPanel.class, CytoPanelName.EAST);
 			
+			networkName = controlPanel.getNetworkValue();
 			formalism = controlPanel.getFormalismValue();
 			timePoint = controlPanel.getTimePointValue();
 			
@@ -114,8 +116,46 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		String plotFitCommand = "cutAndPlotResultsT1(model = cutcompexp, bString = optresult$bString, simList = fields4Sim, CNOlist = cnolist, indexList = indicescutcomp, plotPDF = F)";
 		File cnolistFitPlot = connection.executeReceivePlotFile(plotFitCommand, "cnolist");
 		
+		// Save optimised network to Scaffold.sif file
+		String writeOptmisedNetworkCommand = "writeScaffold(modelComprExpanded = cutcompexp, optimResT1 = optresult, optimResT2 = NA, modelOriginal = model, CNOlist = cnolist)";
+		connection.execute(writeOptmisedNetworkCommand);
+		File optimisedNetwork = connection.getFile("Scaffold.sif");
+		
+		// Import optimised network
+		LoadNetworkFileTaskFactory loadNetworkTask = cyServiceRegistrar.getService(LoadNetworkFileTaskFactory.class);
+		CommandExecutor.execute(loadNetworkTask.createTaskIterator(optimisedNetwork), cyServiceRegistrar);
+		
+		// Read optimised network edges weights
+		String readWeightsCommands = "edgesWeights <- read.table(file = 'weightsScaffold.EA', sep=' ', header=F,  skip=1)";
+		connection.execute(readWeightsCommands);
+		
+		double[] edgesWeights = connection.executeReceiveDoubles("edgesWeights$V5");
+		String[] edgesNames = buildEdgesNames();
+		
 		// Add plot to results panel
 		resultsPanel.appendSVGPlot(cnolistFitPlot);
+	}
+	
+	/**
+	 * Assembles from the edges properties, i.e source nodes, target nodes and interaction type,
+	 * the Cytoscape edges names.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private String[] buildEdgesNames () throws Exception {
+		String[] sourceNodes = connection.executeReceiveStrings("edgesWeights$V1");
+		String[] interactionType = connection.executeReceiveStrings("edgesWeights$V2");
+		String[] targetNodes = connection.executeReceiveStrings("edgesWeights$V3");
+		
+		int n = sourceNodes.length;
+		String[] names = new String[n];
+		
+		for (int i = 0; i < n; i++) {
+			names[i] = sourceNodes[i] + " " + interactionType[i] + " " + targetNodes[i];
+		}
+		
+		return names;
 	}
 	
 	@Override

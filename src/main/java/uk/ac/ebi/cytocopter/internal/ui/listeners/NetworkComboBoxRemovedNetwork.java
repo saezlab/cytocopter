@@ -18,8 +18,11 @@ public class NetworkComboBoxRemovedNetwork implements NetworkAboutToBeDestroyedL
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
 		CyNetwork cyNetwork = event.getNetwork();
-		String cyNetworkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
-		((DefaultComboBoxModel)networkComboBox.getModel()).removeElement(cyNetworkName);
+		
+		if (cyNetwork != null) {
+			String cyNetworkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
+			((DefaultComboBoxModel)networkComboBox.getModel()).removeElement(cyNetworkName);
+		}
 	}
 	
 }

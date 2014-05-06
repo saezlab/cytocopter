@@ -34,7 +34,7 @@ public class SetNodeTypeTask extends AbstractTask implements ObservableTask {
 		
 		String[] namesList = names.split(";");
 		for (String name : namesList) {
-			NetworkAttributes.addAttribute(networkName, name, attribute, cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, name, attribute, cyServiceRegistrar);
 		}
 	}
 

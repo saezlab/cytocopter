@@ -178,11 +178,11 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 			Collection<String> inhibitedReadouts = intersect(inhibitorsArray, readoutArray);
 			
 			// Add aatributes to nodes
-			NetworkAttributes.addAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
-			NetworkAttributes.addAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
-			NetworkAttributes.addAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
-			NetworkAttributes.addAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
-			NetworkAttributes.addAttribute(networkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
 			
 			// Apply visual style
 			String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
