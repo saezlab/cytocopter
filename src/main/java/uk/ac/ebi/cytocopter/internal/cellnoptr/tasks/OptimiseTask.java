@@ -1,6 +1,9 @@
 package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,6 +25,7 @@ import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
 import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.LogPanel;
 import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
 import uk.ac.ebi.cytocopter.internal.utils.CyNetworkUtils;
@@ -37,8 +41,10 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 	
 	private ControlPanel controlPanel;
 	private ResultsPanel resultsPanel;
+	private LogPanel logPanel;
 
 	private StringBuilder outputString;
+	private DateFormat dateFormat;
 	
 	@Tunable(description="midasFile", context="nogui")
     public String midasFile;
@@ -59,6 +65,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		this.useControlPanel = useControlPanel;
 		
 		this.outputString = new StringBuilder();
+		this.dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 	}
 	
 	@Override
@@ -69,6 +76,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		if (useControlPanel) {
 			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class, CytoPanelName.WEST);
 			resultsPanel = (ResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ResultsPanel.class, CytoPanelName.EAST);
+			logPanel = (LogPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, LogPanel.class, CytoPanelName.SOUTH);
 			
 			networkName = controlPanel.getNetworkValue();
 			formalism = controlPanel.getFormalismValue();
@@ -148,6 +156,9 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		String[] readoutArray = connection.executeReceiveStrings("cnolist$namesSignals");
 		String[] compressedArray = connection.executeReceiveStrings("cutcompexp$speciesCompressed");
 
+		// Remove Node Type attribute in case it already exists to reset the existing values
+		NetworkAttributes.removeNodeTypeAttribute(optimisedNetworkName, NodeTypeAttributeEnum.NA, cyServiceRegistrar);
+		
 		// Identify inhibited readouts
 		Collection<String> inhibitedReadouts = NodeTypeAttributeEnum.intersect(inhibitorsArray, readoutArray);
 		
@@ -168,7 +179,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 			
 			if (operator != null) {
 				NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, nodeName, NodeTypeAttributeEnum.OPERATOR, cyServiceRegistrar);
-				NetworkAttributes.addNodeAttribute(optimisedNetwork, node, CyNetwork.NAME, operator, cyServiceRegistrar);
+				optimisedNetwork.getRow(node).set(CyNetwork.NAME, operator);
 			}
 		}
 		
@@ -185,6 +196,14 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		// Apply visual style
 		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
 		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
+		
+		// Write log
+		outputString.append("[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Optimising" + "\n");
+		outputString.append(optimisationCommand.toString());
+		outputString.append("\n");
+		
+		// Append log to Log panel
+		logPanel.appendLog(outputString.toString());
 		
 		// Add plot to results panel
 		resultsPanel.appendSVGPlot(cnolistFitPlot);

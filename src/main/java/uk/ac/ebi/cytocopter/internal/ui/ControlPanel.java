@@ -215,7 +215,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 			label.setBorder(new EmptyBorder(5, 5, 5, 5));
 			
 			JTextField textField = new JTextField(conf.getDefaultValue().toString());
-			textField.setName(conf.getRArgName());
 			
 			// Add components to the panel
 			algorithmPanel.add(label, constraints);
@@ -375,7 +374,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 		Double value;
 		
 		try {
-			value = Double.valueOf(configurationsMap.get(property.getName()).getText());
+			value = Double.valueOf(configurationsMap.get(property.getRArgName()).getText());
 			
 		} catch (Exception e) {
 			value = property.getDefaultValue();

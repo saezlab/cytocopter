@@ -173,6 +173,9 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		// Annotate selected network
 		if (displayNetworkAnnotation) {
+			// Remove Node Type attribute in case it already exists to reset the existing values
+			NetworkAttributes.removeNodeTypeAttribute(networkName, NodeTypeAttributeEnum.NA, cyServiceRegistrar);
+			
 			// Identify inhibited readouts
 			Collection<String> inhibitedReadouts = NodeTypeAttributeEnum.intersect(inhibitorsArray, readoutArray);
 			
