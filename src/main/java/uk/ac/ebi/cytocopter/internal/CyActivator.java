@@ -3,6 +3,7 @@ package uk.ac.ebi.cytocopter.internal;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -16,9 +17,10 @@ import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFacto
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
-import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
-import uk.ac.ebi.cytocopter.internal.ui.LogPanel;
-import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
+import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualReaderCyMenu;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -34,12 +36,10 @@ public class CyActivator extends AbstractCyActivator {
 		this.bundleContext = bundleContext;
 		cyServiceRegistrar = getService(bundleContext, CyServiceRegistrar.class);
 		
-		CytocopterMenuAction action = new CytocopterMenuAction(cyServiceRegistrar, "Cytocopter");
-		registerAllServices(bundleContext, action, new Properties());
-
 		registerPanels();
 		registerCytocopterCommands();
 		loadVisualStyle();
+		loadSbmlQualReader();
 	}
 		
 	private void registerPanels () {
@@ -69,5 +69,33 @@ public class CyActivator extends AbstractCyActivator {
 		InputStream in = getClass().getResourceAsStream(visualStyleFile);
 		LoadVizmapFileTaskFactory loadVizmapFileTaskFactory =  cyServiceRegistrar.getService(LoadVizmapFileTaskFactory.class);
 		loadVizmapFileTaskFactory.loadStyles(in);
+	}
+	
+	private void loadSbmlQualReader () {
+		SbmlQualReaderCyMenu sbmlQualReaderMenu = new SbmlQualReaderCyMenu(cyServiceRegistrar);
+		cyServiceRegistrar.registerService(sbmlQualReaderMenu, CyAction.class, new Properties());
+		
+//		HashSet<String> extensions = new HashSet<String>();
+//		extensions.add("xml");
+//		extensions.add("sbml");
+//		
+//		HashSet<String> contentTypes = new HashSet<String>();
+//		contentTypes.add("xml");
+//		
+//		String description = "SBML-Qual file filter";
+//		
+//		DataCategory category = DataCategory.NETWORK;
+//		
+//		CySwingAppAdapter adapter = cyServiceRegistrar.getService(CySwingAppAdapter.class);
+//		
+//		BasicCyFileFilter filter = new BasicCyFileFilter(extensions,contentTypes, description, category, adapter.getStreamUtil());
+//		
+//		SbmlQualNetworkReaderFactory factory = new SbmlQualNetworkReaderFactory (cyServiceRegistrar, filter);
+//		
+//		Properties props = new Properties();
+//		props.setProperty("readerDescription","Sbml-Qual reader");
+//		props.setProperty("readerId","sbmlqual");
+//		
+//		cyServiceRegistrar.registerService(factory, InputStreamTaskFactory.class, props);
 	}
 }

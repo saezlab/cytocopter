@@ -8,7 +8,7 @@ import org.cytoscape.work.TaskMonitor;
 
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
 import uk.ac.ebi.cyrface.internal.utils.BioconductorPackagesEnum;
-import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
 public class ConfigureCellnoptrTask extends AbstractTask implements ObservableTask {

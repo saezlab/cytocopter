@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
-import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 
 public class OptimiseButtonActionListener implements ActionListener {
 

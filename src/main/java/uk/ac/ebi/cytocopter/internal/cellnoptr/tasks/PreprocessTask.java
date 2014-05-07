@@ -21,9 +21,9 @@ import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
-import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
-import uk.ac.ebi.cytocopter.internal.ui.LogPanel;
-import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
 public class PreprocessTask extends AbstractTask implements ObservableTask {

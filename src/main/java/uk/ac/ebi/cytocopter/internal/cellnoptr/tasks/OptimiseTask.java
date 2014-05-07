@@ -24,10 +24,10 @@ import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
-import uk.ac.ebi.cytocopter.internal.ui.ControlPanel;
-import uk.ac.ebi.cytocopter.internal.ui.LogPanel;
-import uk.ac.ebi.cytocopter.internal.ui.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
+import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CyNetworkUtils;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
 
@@ -196,6 +196,10 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		// Apply visual style
 		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
 		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
+		
+		// Apply layout
+		String layoutCommand = "layout hierarchical";
+		CommandExecutor.execute(layoutCommand, cyServiceRegistrar);
 		
 		// Write log
 		outputString.append("[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Optimising" + "\n");

@@ -1,4 +1,4 @@
-package uk.ac.ebi.cytocopter.internal.ui;
+package uk.ac.ebi.cytocopter.internal.ui.panels;
 
 import java.awt.Color;
 import java.awt.Component;
