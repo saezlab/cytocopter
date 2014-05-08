@@ -17,6 +17,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
+import uk.ac.ebi.cyrface.internal.utils.Rutils;
 import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
@@ -94,10 +95,10 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		// Export selected network to sif
 		File networkFile = File.createTempFile(networkName + "_" + "temp", ".sif");
-		CommandExecutor.execute("network export OutputFile=" + networkFile.getAbsolutePath() + " options=sif", cyServiceRegistrar);
+		CommandExecutor.execute("network export OutputFile=" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + " options=sif", cyServiceRegistrar);
 		
 		// Load model network
-		String loadModelCommand = "model <- readSIF(sifFile = '" + networkFile.getAbsolutePath() + "')";
+		String loadModelCommand = "model <- readSIF(sifFile = '" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "')";
 		String loadModelOutput = connection.executeParseOutput(loadModelCommand);
 		
 		// Load midas file
