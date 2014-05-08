@@ -10,13 +10,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.w3c.dom.Document;
@@ -24,8 +20,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import uk.ac.ebi.cytocopter.internal.CyActivator;
-import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
+import uk.ac.ebi.cytocopter.internal.utils.CyNetworkUtils;
 
 public class SbmlQualNetworkReader extends AbstractTask {
 
@@ -35,7 +30,6 @@ public class SbmlQualNetworkReader extends AbstractTask {
 	private File networkFile;
 
 	private CyNetwork cyNetwork;
-	private CyNetworkView cyNetworkView;
 	
 	
 	public SbmlQualNetworkReader (File networkFile, CyServiceRegistrar cyServiceRegistrar) {
@@ -103,15 +97,6 @@ public class SbmlQualNetworkReader extends AbstractTask {
 			}
 		}
 		
-		// Register network and create view
-		cyServiceRegistrar.getService(CyNetworkManager.class).addNetwork(cyNetwork);
-		cyNetworkView = cyServiceRegistrar.getService(CyNetworkViewFactory.class).createNetworkView(cyNetwork);
-		cyServiceRegistrar.getService(CyNetworkViewManager.class).addNetworkView(cyNetworkView);
-		
-		// Apply visual style
-		CommandExecutor.execute("vizmap apply styles=\"" + CyActivator.visualStyleName + "\"", cyServiceRegistrar);
-		
-		// Apply layout
-		CommandExecutor.execute("layout grid network=\"" + networkName + "\"", cyServiceRegistrar);
+		CyNetworkUtils.createViewAndRegister(cyServiceRegistrar, cyNetwork);
 	}
 }

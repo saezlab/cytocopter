@@ -1,13 +1,23 @@
 package uk.ac.ebi.cytocopter.internal.utils;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskIterator;
+
+import uk.ac.ebi.cytocopter.internal.CyActivator;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 
 public class CyNetworkUtils {
 
@@ -41,4 +51,38 @@ public class CyNetworkUtils {
 		CyNetwork cyNetwork = getCyNetwork(cyServiceRegistrar, cyNetworkName);
 		return cyNetwork.getEdgeList();
 	}
+	
+	public static String getUniqueNetworkName (CyServiceRegistrar cyServiceRegistrar, String name) {
+		String uniqueName = name;
+		
+		for (int i = 1; getCyNetwork(cyServiceRegistrar, uniqueName) != null; i++) {
+			uniqueName = name + "_" + i;
+		}
+		
+		return uniqueName;
+	}
+	
+	public static void createViewAndRegister (CyServiceRegistrar cyServiceRegistrar, CyNetwork cyNetwork) {
+		String networkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
+		
+		// Register network
+		cyServiceRegistrar.getService(CyNetworkManager.class).addNetwork(cyNetwork);
+		
+		// Create network view
+		CyNetworkView cyNetworkView = cyServiceRegistrar.getService(CyNetworkViewFactory.class).createNetworkView(cyNetwork);
+		cyServiceRegistrar.getService(CyNetworkViewManager.class).addNetworkView(cyNetworkView);
+		
+		// Apply visual style
+		CommandExecutor.execute("vizmap apply styles=\"" + CyActivator.visualStyleName + "\"", cyServiceRegistrar);
+		
+		// Apply layout
+		CommandExecutor.execute("layout grid network=\"" + networkName + "\"", cyServiceRegistrar);
+	}
+	
+	public static CyNetwork readCyNetworkFromFile (CyServiceRegistrar cyServiceRegistrar, File cyNetworkFile) {
+		CyNetworkReader networkReader = cyServiceRegistrar.getService(CyNetworkReaderManager.class).getReader(cyNetworkFile.toURI(), cyNetworkFile.getName());
+		CommandExecutor.execute(new TaskIterator(networkReader), cyServiceRegistrar);
+		return networkReader.getNetworks()[0];
+	}
+	
 }

@@ -12,7 +12,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -137,11 +136,14 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		String writeOptmisedNetworkCommand = "writeScaffold(modelComprExpanded = cutcompexp, optimResT1 = optresult, optimResT2 = NA, modelOriginal = model, CNOlist = cnolist)";
 		connection.execute(writeOptmisedNetworkCommand);
 		File optimisedNetworkFile = connection.getFile("Scaffold.sif");
-		String optimisedNetworkName = optimisedNetworkFile.getName();
+		
+		// Generate a unique name for the optimised network
+		String optimisedNetworkName = CyNetworkUtils.getUniqueNetworkName(cyServiceRegistrar, networkName + "_" + "Optimised");
 		
 		// Import optimised network
-		LoadNetworkFileTaskFactory loadNetworkTask = cyServiceRegistrar.getService(LoadNetworkFileTaskFactory.class);
-		CommandExecutor.execute(loadNetworkTask.createTaskIterator(optimisedNetworkFile), cyServiceRegistrar);
+		CyNetwork optimisedCyNetwork = CyNetworkUtils.readCyNetworkFromFile(cyServiceRegistrar, optimisedNetworkFile);
+		optimisedCyNetwork.getRow(optimisedCyNetwork).set(CyNetwork.NAME, optimisedNetworkName);
+		CyNetworkUtils.createViewAndRegister(cyServiceRegistrar, optimisedCyNetwork);
 		
 		// Read optimised network edges weights
 		String readWeightsCommands = "edgesWeights <- read.table(file = 'weightsScaffold.EA', sep=' ', header=F,  skip=1)";
