@@ -1,24 +1,29 @@
 package uk.ac.ebi.cytocopter.internal.cellnoptr.io.sbmlqual;
 
-import java.io.InputStream;
+import java.io.File;
 
-import org.cytoscape.app.swing.CySwingAppAdapter;
-import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SbmlQualNetworkReaderFactory extends AbstractInputStreamTaskFactory {
+public class SbmlQualNetworkReaderFactory implements TaskFactory {
 
 	private CyServiceRegistrar cyServiceRegistrar;
-
-	public SbmlQualNetworkReaderFactory (CyServiceRegistrar cyServiceRegistrar) {
-		super(new SbmlQualCyFileFilter(cyServiceRegistrar.getService(CySwingAppAdapter.class).getStreamUtil()));
+	private File file;
+	
+	public SbmlQualNetworkReaderFactory (CyServiceRegistrar cyServiceRegistrar, File file) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
+		this.file = file;
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator(InputStream stream, String inputName) {
-		return new TaskIterator(new SbmlQualNetworkReader(stream, inputName, cyServiceRegistrar));
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new SbmlQualNetworkReader(file, cyServiceRegistrar));
 	}
-	
+
+	@Override
+	public boolean isReady() {
+		return false;
+	}
+
 }

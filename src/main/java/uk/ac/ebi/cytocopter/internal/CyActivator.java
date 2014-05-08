@@ -3,8 +3,8 @@ package uk.ac.ebi.cytocopter.internal;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
@@ -13,11 +13,11 @@ import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.CytocopterCommandsEnum;
-import uk.ac.ebi.cytocopter.internal.cellnoptr.io.sbmlqual.SbmlQualNetworkReaderFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
+import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualImportMenu;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
@@ -72,12 +72,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void loadSbmlQualReader () {
-		SbmlQualNetworkReaderFactory sbmlQualReader = new SbmlQualNetworkReaderFactory(cyServiceRegistrar);
-		
-		Properties props = new Properties();
-		props.setProperty("readerDescription","SBML-Qual reader");
-		props.setProperty("readerId","SbmlQual");
-		
-		cyServiceRegistrar.registerService(sbmlQualReader, InputStreamTaskFactory.class, props);
+		SbmlQualImportMenu menu = new SbmlQualImportMenu(cyServiceRegistrar);
+		cyServiceRegistrar.registerService(menu, CyAction.class, new Properties());
 	}
 }
