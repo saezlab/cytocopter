@@ -74,8 +74,8 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 			
 			connection = controlPanel.connection;
 			
-			networkName = controlPanel.getNetworkValue();
-			midasFile = controlPanel.getMidasFilePath();
+			networkName = Rutils.getWindowsCorrectPath(controlPanel.getNetworkValue());
+			midasFile = Rutils.getWindowsCorrectPath(controlPanel.getMidasFilePath());
 		}
 		
 		// Check if connection is established
@@ -95,7 +95,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		
 		// Export selected network to sif
 		File networkFile = File.createTempFile(networkName + "_" + "temp", ".sif");
-		CommandExecutor.execute("network export OutputFile=" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + " options=sif", cyServiceRegistrar);
+		CommandExecutor.execute("network export OutputFile=\"" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "\"" + " options=sif", cyServiceRegistrar);
 		
 		// Load model network
 		String loadModelCommand = "model <- readSIF(sifFile = '" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "')";
