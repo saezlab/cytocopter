@@ -17,7 +17,8 @@ public class CommandExecutor {
 		commands.add(command);
 		
 		TaskIterator task = executor.createTaskIterator(commands, null);
-		cyServiceRegistrar.getService(SynchronousTaskManager.class).execute(task);
+		SynchronousTaskManager manager = cyServiceRegistrar.getService(SynchronousTaskManager.class);
+		manager.execute(task);
 	}
 	
 	public static void execute (TaskIterator commandTask, CyServiceRegistrar cyServiceRegistrar) {

@@ -4,7 +4,8 @@ public enum CytocopterCommandsEnum {
 	CONFIGURE("configure"),
 	PREPROCESS("preprocess"),
 	OPTIMISE("optimise"),
-	NODETYPE("node type");
+	NODETYPE("node type"),
+	EXPORT_QBML_QUAL("export sbml-qual");
 	
 	public static final String CYTOCOPTER_NAME_SPACE = "cytocopter";
 	

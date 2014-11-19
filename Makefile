@@ -12,7 +12,7 @@
 # program. If not, see <http://www.debian.org/misc/bsd.license>.
 
 NAME=cytocopter
-VERSION=2.0.0
+VERSION=2.0.1
 
 default: mvn-build
 	cp target/$(NAME)-$(VERSION).jar /Users/emanuel/CytoscapeConfiguration/3/apps/installed/

@@ -17,6 +17,7 @@ import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFacto
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
+import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualExportMenu;
 import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualImportMenu;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
@@ -72,7 +73,10 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void loadSbmlQualReader () {
-		SbmlQualImportMenu menu = new SbmlQualImportMenu(cyServiceRegistrar);
-		cyServiceRegistrar.registerService(menu, CyAction.class, new Properties());
+		SbmlQualImportMenu importSbmlQualMenu = new SbmlQualImportMenu(cyServiceRegistrar);
+		cyServiceRegistrar.registerService(importSbmlQualMenu, CyAction.class, new Properties());
+		
+//		SbmlQualExportMenu exportSbmlQualMenu = new SbmlQualExportMenu(cyServiceRegistrar);
+//		cyServiceRegistrar.registerService(exportSbmlQualMenu, CyAction.class, new Properties());
 	}
 }
