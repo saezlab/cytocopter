@@ -9,40 +9,55 @@ import org.cytoscape.util.swing.FileChooserFilter;
 
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 
-public class DataMouseListener implements MouseListener {
+public class DataMouseListener implements MouseListener
+{
 
 	private ControlPanel controlPanel;
 
-	public DataMouseListener (ControlPanel controlPanel) {
+	public DataMouseListener(ControlPanel controlPanel)
+	{
 		this.controlPanel = controlPanel;
 	}
 
 	@Override
-	public void mouseClicked (MouseEvent event) {
-		try {
+	public void mouseClicked(MouseEvent event)
+	{
+		try
+		{
 			JFileChooser fc = new JFileChooser(controlPanel.dataFile);
 			fc.addChoosableFileFilter(new FileChooserFilter("MIDAS", "csv"));
 
 			int chooseFileReturn = fc.showOpenDialog(null);
-			if (controlPanel.getNetworkValue() != null && chooseFileReturn == JFileChooser.APPROVE_OPTION) {
-				controlPanel.dataFile  = fc.getSelectedFile();
+			if (controlPanel.getNetworkValue() != null && chooseFileReturn == JFileChooser.APPROVE_OPTION)
+			{
+				controlPanel.dataFile = fc.getSelectedFile();
 				controlPanel.dataTextField.setText(controlPanel.dataFile.getName());
 			}
-			
-		} catch (Exception e) {
+
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e)
+	{
+	}
 
 	@Override
-	public void mouseExited(MouseEvent e) {}
+	public void mouseExited(MouseEvent e)
+	{
+	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {}
+	public void mousePressed(MouseEvent e)
+	{
+	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e)
+	{
+	}
 }

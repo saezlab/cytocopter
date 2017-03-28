@@ -3,9 +3,13 @@ package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+
+import javax.swing.JPanel;
 
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyEdge;
@@ -17,18 +21,23 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
 import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
+import uk.ac.ebi.cytocopter.internal.mahdimidas.CNO;
+import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.CNONetwork;
+import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.NetworkFactory;
+import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.NetworkOptimizer;
+import uk.ac.ebi.cytocopter.internal.mahdiplotting.ContainerPanelSimulation;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CyNetworkUtils;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
+import uk.ac.ebi.cytocopter.internal.utils.MSutils;
 
 public class OptimiseTask extends AbstractTask implements ObservableTask {
 
@@ -36,7 +45,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 	
 	private CyServiceRegistrar cyServiceRegistrar;
 	
-	private RserveHandler connection;
+	//private RserveHandler connection;
 	
 	private ControlPanel controlPanel;
 	private ResultsPanel resultsPanel;
@@ -65,6 +74,8 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		
 		this.outputString = new StringBuilder();
 		this.dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+		
+		
 	}
 	
 	@Override
@@ -81,62 +92,55 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 			formalism = controlPanel.getFormalismValue();
 			timePoint = controlPanel.getTimePointValue();
 			
-			connection = controlPanel.connection;
-		}
-		
-		// Check if connection is established if not run necessary commands for the optimisation
-		if (connection == null) {
-			// Initialise connection
-			connection = new RserveHandler(cyServiceRegistrar);
 			
-			// Save connection in control panel
-			if (useControlPanel) controlPanel.connection = connection;
 		}
 		
-		// Run CellNOptR R package preprocess
-		PreprocessTaskFactory preprocess = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar, true, false, false);
-		CommandExecutor.execute(preprocess.createTaskIterator(), cyServiceRegistrar);
 		
-		// Check number of time points in the data
-		double numberOfTimePoints = connection.executeReceiveDouble("length(cnolist$timeSignals)");
-		if (numberOfTimePoints > 2 && formalism.equals(FormalismEnum.BOOLEAN.getName()) && timePoint == null)
-			throw new Exception("Time point undefined: Boolean formalism and data time points bigger than 2");
 		
-		// If time point is defined a subset of the cno list time points is used
-		if (numberOfTimePoints > 2 && formalism.equals(FormalismEnum.BOOLEAN.getName())) {
-			connection.execute("t <- " + timePoint);
-			connection.execute("cnolistaux <- cnolist");
-			connection.execute("tindex <- which(cnolistaux$timeSignals == t)");
-			connection.execute("cnolistaux$timeSignals = c(0,t)");
-			connection.execute("cnolistaux$valueSignals <- list(t0 = cnolist$valueSignals[[1]], cnolist$valueSignals[[tindex]])");
-			connection.execute("cnolist <- cnolistaux");
-		}
 		
-		// Run optimisation
-		StringBuilder optimisationCommand = new StringBuilder("optresult <- gaBinaryT1(CNOlist = cnolist, model = cutcompexp, initBstring = bstring, ");
-		for (AlgorithmConfigurationsEnum arg : AlgorithmConfigurationsEnum.values()) {
-			optimisationCommand.append(arg.getRArgName());
-			optimisationCommand.append(" = ");
-			optimisationCommand.append(controlPanel.getAlgorithmPropertyValue(arg));
-			optimisationCommand.append(", ");
-		}
-		optimisationCommand.append("verbose = F)");
+		// Focus selected network
+				CommandExecutor.execute("network set current network=" + networkName,
+						cyServiceRegistrar);
+				
+
+				// Export selected network to sif
+				File networkFile = File.createTempFile(networkName + "_" + "temp",
+						".sif");
+				CommandExecutor.execute(
+						"network export OutputFile=\""
+								+ MSutils.getWindowsCorrectPath(networkFile
+										.getAbsolutePath()) + "\"" + " options=sif",
+						cyServiceRegistrar);
+				
+				midasFile = controlPanel.getMidasFilePath();
+				
+				
+				NetworkFactory networkFactory = new NetworkFactory();
+				CNONetwork cnoNetwork= networkFactory.importNetwork(networkFile.toString());
+				
+				CNO midas = new CNO(midasFile);
+				cnoNetwork.setMidas(midas);
+				cnoNetwork.compress();
+				cnoNetwork.expand();
+				
+				int p_TimePoint = Integer.parseInt(timePoint.substring(0,timePoint.indexOf(".")));
+				double p_SizeFac = controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.SIZE_FAC);
+				double p_NAFac = controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.NA_FAC);
+				int p_PopSize = controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.POP_SIZE).intValue();
+				double p_MaxTime = controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.MAX_TIME);
+				int p_MaxGen = controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.MAX_GENS).intValue();
+				double p_RelTol= controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.REL_TOL);
+				
+				
+				NetworkOptimizer networkOptimizer =  new NetworkOptimizer(cnoNetwork, p_TimePoint,p_SizeFac,p_NAFac,p_PopSize,p_MaxTime,p_MaxGen,p_RelTol);
+				networkOptimizer.runs();
+
+				File optimisedNetworkFile = File.createTempFile("Scaffold", ".sif");
+				
+				cnoNetwork.exportNetwork(optimisedNetworkFile);
 		
-		connection.execute(optimisationCommand.toString());
 		
-		// Retrive fitness plot
-		String plotFitnessCommand = "plotFit(optRes = optresult)";
-		File fitnessPlot = connection.executeReceivePlotFile(plotFitnessCommand, "cnolist");
-		
-		// Retrive fit plot
-		String plotFitCommand = "cutAndPlotResultsT1(model = cutcompexp, bString = optresult$bString, simList = fields4Sim, CNOlist = cnolist, indexList = indicescutcomp, plotPDF = F)";
-		File cnolistFitPlot = connection.executeReceivePlotFile(plotFitCommand, "cnolist");
-		
-		// Save optimised network to Scaffold.sif file
-		String writeOptmisedNetworkCommand = "writeScaffold(modelComprExpanded = cutcompexp, optimResT1 = optresult, optimResT2 = NA, modelOriginal = model, CNOlist = cnolist)";
-		connection.execute(writeOptmisedNetworkCommand);
-		File optimisedNetworkFile = connection.getFile("Scaffold.sif");
-		
+				
 		// Generate a unique name for the optimised network
 		String optimisedNetworkName = CyNetworkUtils.getUniqueNetworkName(cyServiceRegistrar, networkName + "_" + "Optimised");
 		
@@ -145,18 +149,26 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		optimisedCyNetwork.getRow(optimisedCyNetwork).set(CyNetwork.NAME, optimisedNetworkName);
 		CyNetworkUtils.createViewAndRegister(cyServiceRegistrar, optimisedCyNetwork);
 		
-		// Read optimised network edges weights
-		String readWeightsCommands = "edgesWeights <- read.table(file = 'weightsScaffold.EA', sep=' ', header=F,  skip=1)";
-		connection.execute(readWeightsCommands);
 		
-		double[] edgesWeights = connection.executeReceiveDoubles("edgesWeights$V5");
-		String[] edgesNames = buildEdgesNames();
 		
-		// Get node types
-		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
-		String[] inhibitorsArray = connection.executeReceiveStrings("cnolist$namesInhibitors");
-		String[] readoutArray = connection.executeReceiveStrings("cnolist$namesSignals");
-		String[] compressedArray = connection.executeReceiveStrings("cutcompexp$speciesCompressed");
+		
+		ArrayList<Double> DesiredResultsWeights = networkOptimizer.getAdaptedDesiredResultsWeights();
+		int DesiredResultsWeightsLength = DesiredResultsWeights.size();
+		double[] edgesWeights = new double [DesiredResultsWeightsLength];
+		for(int i=0;i<DesiredResultsWeightsLength;i++)
+		{
+			edgesWeights[i] = DesiredResultsWeights.get(i);
+		}
+		
+		String[] edgesNames = networkOptimizer.getAdaptedEdgeNames().toArray(new String[0]);
+		
+		String[] stimuliArray = midas.namesStimuli().toArray(new String[0]);
+		String[] inhibitorsArray = midas.namesInhibitors().toArray(new String[0]);
+		String[] readoutArray = midas.namesSignals().toArray(new String[0]);
+		String[] compressedArray = cnoNetwork.compressedNodes().toArray(new String[0]);
+		
+		
+		
 
 		// Remove Node Type attribute in case it already exists to reset the existing values
 		NetworkAttributes.removeNodeTypeAttribute(optimisedNetworkName, NodeTypeAttributeEnum.NA, cyServiceRegistrar);
@@ -170,6 +182,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
 		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
 		NetworkAttributes.addNodeTypeAttribute(optimisedNetworkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
+		
 		
 		// Set Optimised network node types
 		CyNetwork optimisedNetwork = CyNetworkUtils.getCyNetwork(cyServiceRegistrar, optimisedNetworkName);
@@ -188,8 +201,11 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		// Set Optimised network edge weights
 		String edgeWeightAttribute = "Cytocopter.EdgeWeight";
 		
-		optimisedNetwork.getDefaultEdgeTable().createColumn(edgeWeightAttribute, Double.class, false);
-
+		optimisedNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS).createColumn(edgeWeightAttribute, Double.class, false);
+		
+		
+		
+		
 		for (int i = 0; i < edgesNames.length; i++) {
 			CyEdge edge = CyNetworkUtils.getCyEdge(optimisedNetwork, edgesNames[i]);
 			optimisedNetwork.getRow(edge).set(edgeWeightAttribute, edgesWeights[i]);
@@ -205,37 +221,21 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		
 		// Write log
 		outputString.append("[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Optimising" + "\n");
-		outputString.append(optimisationCommand.toString());
-		outputString.append("\n");
 		
 		// Append log to Log panel
 		logPanel.appendLog(outputString.toString());
 		
-		// Add plot to results panel
-		resultsPanel.appendSVGPlot(cnolistFitPlot);
+		
+		List<HashMap<String, Integer>> simulationResultsBeginTime = cnoNetwork.simulateForAllTreatmentCombination(0);
+		List<HashMap<String, Integer>> simulationResultEndTime = cnoNetwork.simulateForAllTreatmentCombination(p_TimePoint);
+		
+		JPanel optimizationJPanel = new ContainerPanelSimulation(midas,0,p_TimePoint, simulationResultsBeginTime,simulationResultEndTime);
+		
+		resultsPanel.appendJPanelPlot(optimizationJPanel);
+		
+		
 	}
 	
-	/**
-	 * Assembles from the edges properties, i.e source nodes, target nodes and interaction type,
-	 * the Cytoscape edges names.
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	private String[] buildEdgesNames () throws Exception {
-		String[] sourceNodes = connection.executeReceiveStrings("edgesWeights$V1");
-		String[] interactionType = connection.executeReceiveStrings("edgesWeights$V2");
-		String[] targetNodes = connection.executeReceiveStrings("edgesWeights$V3");
-		
-		int n = sourceNodes.length;
-		String[] names = new String[n];
-		
-		for (int i = 0; i < n; i++) {
-			names[i] = sourceNodes[i] + " " + interactionType[i] + " " + targetNodes[i];
-		}
-		
-		return names;
-	}
 	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {

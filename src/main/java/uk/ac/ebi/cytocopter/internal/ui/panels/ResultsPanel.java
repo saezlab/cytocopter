@@ -6,18 +6,13 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
-import org.apache.batik.swing.JSVGCanvas;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -25,8 +20,6 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
-import uk.ac.ebi.cyrface.internal.utils.PlotsDialog.Attributes;
-import uk.ac.ebi.cyrface.internal.utils.SVGPlots;
 
 @SuppressWarnings("serial")
 public class ResultsPanel extends JPanel implements CytoPanelComponent {
@@ -34,22 +27,20 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent {
 	private CyServiceRegistrar cyServiceRegistrar;
 
 	private JPanel toolBarPanel;
-	private JButton savePlot;
 	private JButton previousPlot;
 	private JButton nextPlot;
 
 	private JPanel plotPanel;
-	private JSVGCanvas canvas;
-	private SVGPlots plot;
 
-	private List<File> plotList;
+	private List<JPanel> plotList;
+	
 	private int currentPlotIndex;
 
 
 	public ResultsPanel (CyServiceRegistrar cyServiceRegistrar) {
 		this.cyServiceRegistrar = cyServiceRegistrar;
 
-		plotList = new ArrayList<File>();
+		plotList = new ArrayList<JPanel>();
 
 		// Define Panel properties
 		setLayout(new BorderLayout());
@@ -66,11 +57,9 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent {
 
 	private void createNorthPanel () {
 		toolBarPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		savePlot = new JButton("Save");
 		previousPlot = new JButton("<");
 		nextPlot = new JButton(">");
 
-		toolBarPanel.add(savePlot);
 		toolBarPanel.add(previousPlot);
 		toolBarPanel.add(nextPlot);
 
@@ -105,28 +94,6 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 
-		savePlot.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				try {
-					JFileChooser fc = new JFileChooser();
-					fc.setDialogTitle(Attributes.SAVE_R_PLOT_MENU_NAME.text);
-					int browserReturn = fc.showSaveDialog(null);
-
-					if (browserReturn == JFileChooser.APPROVE_OPTION) {
-						String savePath = fc.getSelectedFile().getAbsolutePath();
-						File plotFile = plotList.get(currentPlotIndex);
-
-						savePath = savePath + "." + FilenameUtils.getExtension(plotFile.getName());
-
-						File destinationFile = new File(savePath);
-						FileUtils.copyFile(plotFile, destinationFile);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 
 	/** 
@@ -158,23 +125,17 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent {
 	 * 
 	 * @throws Exception
 	 */
-	public void showPlot (File plotFile) throws Exception {
+	public void showPlot (JPanel jpanelPlot) throws Exception {
 		clearPlotPanel();
 		
-		plot = new SVGPlots(plotFile);
-		canvas = plot.createPlotPanel();
 		
-		plotPanel.add(canvas, BorderLayout.CENTER);		
+		plotPanel.add(jpanelPlot);		
 
 		showPanel();
 	}
 	
 	public void clearPlotPanel () {
-		if (canvas != null) {
-			plotPanel.remove(canvas);
-			canvas.removeAll();
-			canvas.dispose();
-		}
+		plotPanel.removeAll();
 	}
 
 	/** 
@@ -199,10 +160,13 @@ public class ResultsPanel extends JPanel implements CytoPanelComponent {
 	 * @param plotFile
 	 * @throws Exception
 	 */
-	public void appendSVGPlot (File plotFile) throws Exception {
-		plotList.add(plotFile);
+	
+	public void appendJPanelPlot(JPanel jpanelPlot) throws Exception
+	{
+		plotList.add(jpanelPlot);
 		currentPlotIndex = plotList.size() - 1;
-		showPlot(plotFile);
+		showPlot(jpanelPlot);
+		
 	}
 
 	@Override

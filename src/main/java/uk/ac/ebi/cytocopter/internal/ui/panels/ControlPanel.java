@@ -30,7 +30,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
-import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
+//import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.FormalismEnum;
 import uk.ac.ebi.cytocopter.internal.ui.enums.AlgorithmConfigurationsEnum;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.DataMouseListener;
@@ -43,7 +43,7 @@ import uk.ac.ebi.cytocopter.internal.ui.listeners.PreprocessButtonActionListener
 public class ControlPanel extends JPanel implements CytoPanelComponent {
 
 	public CyServiceRegistrar cyServiceRegistrar;
-	public RserveHandler connection;
+//	public RserveHandler connection;
 	
 	public JLabel networkLabel;
 	public JComboBox networkCombo;
@@ -190,6 +190,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 		c.gridx = 2;
 		c.gridwidth = 1;
 		optimiseButton = new JButton("Optimise");
+		optimiseButton.setEnabled(false);
 		add(optimiseButton, c);
 	}
 	

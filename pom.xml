@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -8,13 +9,13 @@
 		<bundle.namespace>uk.ac.ebi.cytocopter</bundle.namespace>
 		<cytoscape.api.version>3.1.0</cytoscape.api.version>
 	</properties>
-	
+
 	<groupId>uk.ac.ebi</groupId>
 	<artifactId>cytocopter</artifactId>
-	<version>2.0.1</version>
+	<version>3.0</version>
 
 	<name>CytoCopteR</name>
-	
+
 	<packaging>bundle</packaging>
 
 	<build>
@@ -23,7 +24,7 @@
 				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
-		<!-- Cytoscape requires Java 1.6 -->
+		<!-- Cytoscape requires Java 1.8 -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -46,8 +47,8 @@
 					</execution>
 				</executions>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<optimize>true</optimize>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>
@@ -84,18 +85,18 @@
 					</instructions>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 				<artifactId>maven-javadoc-plugin</artifactId> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>attach-javadocs</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>jar</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 		</plugins>
 	</build>
 
@@ -134,7 +135,7 @@
 			<version>4.2.0</version>
 		</dependency>
 		<dependency>
-		<groupId>org.ops4j.pax.logging</groupId>
+			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
 			<version>1.5.2</version>
 		</dependency>
@@ -181,19 +182,19 @@
 			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.cytoscape</groupId>
-    		<artifactId>app-api</artifactId>
-    		<version>${cytoscape.api.version}</version>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>app-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.cytoscape</groupId>
-    		<artifactId>swing-application-api</artifactId>
-    		<version>${cytoscape.api.version}</version>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-application-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.cytoscape</groupId>
-    		<artifactId>event-api</artifactId>
-    		<version>${cytoscape.api.version}</version>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -201,14 +202,14 @@
 			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.cytoscape</groupId>
-    		<artifactId>swing-util-api</artifactId>
-    		<version>${cytoscape.api.version}</version>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.cytoscape</groupId>
-    		<artifactId>swing-app-api</artifactId>
-    		<version>${cytoscape.api.version}</version>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-app-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<!-- 3rd party dependencies -->
@@ -217,11 +218,29 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
+
+		<!-- Added By Mahdi to support Genetic Algorithm -->
 		<dependency>
-			<groupId>uk.ac.ebi</groupId>
-			<artifactId>cyrface</artifactId>
-			<version>2.0.1</version>
+			<groupId>net.sf.jgap</groupId>
+			<artifactId>jgap</artifactId>
+			<version>3.4.4</version>
 		</dependency>
+
+		<!-- Added By Mahdi for plotting -->
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+
+		<!-- Added By Mahdi for reading the csv file -->
+		<dependency>
+			<groupId>au.com.bytecode</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.4</version>
+		</dependency>
+
+
 		
 		<!-- Testing -->
 		<dependency>
@@ -238,7 +257,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		<groupId>org.cytoscape</groupId>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
 			<version>${cytoscape.api.version}</version>
 			<scope>test</scope>

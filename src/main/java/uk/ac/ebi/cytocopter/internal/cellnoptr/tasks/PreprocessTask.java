@@ -5,6 +5,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 
@@ -16,26 +17,29 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import uk.ac.ebi.cyrface.internal.rinterface.rserve.RserveHandler;
-import uk.ac.ebi.cyrface.internal.utils.Rutils;
 import uk.ac.ebi.cytocopter.internal.CyActivator;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.NodeTypeAttributeEnum;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
+import uk.ac.ebi.cytocopter.internal.mahdimidas.CNO;
+import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.CNONetwork;
+import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.NetworkFactory;
+import uk.ac.ebi.cytocopter.internal.mahdiplotting.ContainerPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
 import uk.ac.ebi.cytocopter.internal.utils.CytoPanelUtils;
+import uk.ac.ebi.cytocopter.internal.utils.MSutils;
 
-public class PreprocessTask extends AbstractTask implements ObservableTask {
+public class PreprocessTask extends AbstractTask implements ObservableTask
+{
 
 	private boolean useControlPanel;
 	private boolean displayResults;
 	private boolean displayNetworkAnnotation;
-	
+
 	private CyServiceRegistrar cyServiceRegistrar;
-	private RserveHandler connection;
-	
+
 	private ControlPanel controlPanel;
 	private ResultsPanel resultsPanel;
 	private LogPanel logPanel;
@@ -43,14 +47,15 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 	private StringBuilder outputString;
 	private DateFormat dateFormat;
 
-	@Tunable(description="midasFile", context="nogui")
-    public String midasFile = "";
-	
-	@Tunable(description="networkName", context="nogui")
-    public String networkName = "";
-	
-	
-	public PreprocessTask (CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults, boolean displayNetworkAnnotation) {
+	@Tunable(description = "midasFile", context = "nogui")
+	public String midasFile = "";
+
+	@Tunable(description = "networkName", context = "nogui")
+	public String networkName = "";
+
+	public PreprocessTask(CyServiceRegistrar cyServiceRegistrar, boolean useControlPanel, boolean displayResults,
+			boolean displayNetworkAnnotation)
+	{
 		this.cyServiceRegistrar = cyServiceRegistrar;
 		this.useControlPanel = useControlPanel;
 		this.displayResults = displayResults;
@@ -58,162 +63,138 @@ public class PreprocessTask extends AbstractTask implements ObservableTask {
 		this.outputString = new StringBuilder();
 		this.dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 	}
-	
-	// cytocopter preprocess midasFile=/Users/emanuel/files.cytocopter/ToyModelPB.csv networkName=PKN-ToyPB.sif
 
+	// cytocopter preprocess
 	@Override
-	public void run (TaskMonitor taskMonitor) throws Exception {
-		
+	public void run(TaskMonitor taskMonitor) throws Exception
+	{
+
 		taskMonitor.setTitle("Cytocopter - Preprocessing...");
-		
+
 		// Get necessary attributes from control panel otherwise from tunables.
-		if (useControlPanel) {
-			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class, CytoPanelName.WEST);
-			resultsPanel = (ResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ResultsPanel.class, CytoPanelName.EAST);
+		if (useControlPanel)
+		{
+			controlPanel = (ControlPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ControlPanel.class,
+					CytoPanelName.WEST);
+			resultsPanel = (ResultsPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, ResultsPanel.class,
+					CytoPanelName.EAST);
 			logPanel = (LogPanel) CytoPanelUtils.getCytoPanel(cyServiceRegistrar, LogPanel.class, CytoPanelName.SOUTH);
-			
-			connection = controlPanel.connection;
-			
-			networkName = Rutils.getWindowsCorrectPath(controlPanel.getNetworkValue());
-			midasFile = Rutils.getWindowsCorrectPath(controlPanel.getMidasFilePath());
-		}
-		
-		// Check if connection is established
-		if (connection == null) {
-			connection = new RserveHandler(cyServiceRegistrar);
-			
-			// Save connection in control panel
-			if (useControlPanel) controlPanel.connection = connection;
+
+
+			networkName = MSutils.getJavaCorrectPath(MSutils.getWindowsCorrectPath(controlPanel.getNetworkValue()));
+			midasFile = MSutils.getJavaCorrectPath(MSutils.getWindowsCorrectPath(controlPanel.getMidasFilePath()));
 		}
 
-		// Configure CellNOptR R package
-		ConfigureCellnoptrTaskFactory configureCellnoptr = new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, true);
-		CommandExecutor.execute(configureCellnoptr.createTaskIterator(), cyServiceRegistrar);
-		
+
 		// Focus selected network
 		CommandExecutor.execute("network set current network=" + networkName, cyServiceRegistrar);
-		
+
 		// Export selected network to sif
 		File networkFile = File.createTempFile(networkName + "_" + "temp", ".sif");
-		CommandExecutor.execute("network export OutputFile=\"" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "\"" + " options=sif", cyServiceRegistrar);
-		
-		// Load model network
-		String loadModelCommand = "model <- readSIF(sifFile = '" + Rutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "')";
-		String loadModelOutput = connection.executeParseOutput(loadModelCommand);
-		
-		// Load midas file
-		String loadMidasCommand = "data <- readMIDAS(MIDASfile = '" + midasFile + "')";
-		String loadMidasOutput = connection.executeParseOutput(loadMidasCommand);
-		
-		// Create CNO List
-		String createCNOListCommand = "cnolist <- makeCNOlist(dataset = data, subfield = F)";
-		String createCNOListOutput = connection.executeParseOutput(createCNOListCommand);
-		
-		// Check if data and model matches
-		String checkSignalsCommand = "checkSignals(cnolist, model)";
-		String checkSignalsOutput = connection.executeParseOutput(checkSignalsCommand);
-		
-		// Finder indices
-		String finderIndicesCommand = "indices <- indexFinder(cnolist, model, verbose = T)";
-		String finderIndicesOutput = connection.executeParseOutput(finderIndicesCommand);
-		
-		// Finding and cutting the non observable and non controllable species
-		String findNONCCommand = "noncindices <- findNONC(model, indices, verbose = T)";
-		String findNONCOutput = connection.executeParseOutput(findNONCCommand);
-		
-		String cutNONCCommand = "ncnocut <- cutNONC(model, noncindices)";
-		String cutNONCOutput = connection.executeParseOutput(cutNONCCommand);
-		
-		String indexFinderCommand = "cutindices <- indexFinder(cnolist, ncnocut)";
-		String indexFinderOutput = connection.executeParseOutput(indexFinderCommand);
-		
-		// Compressing the model
-		String compressModelCommand = "cutcomp <- compressModel(ncnocut, cutindices)";
-		String compressModelOutput = connection.executeParseOutput(compressModelCommand);
-		
-		String indexFinderCutCommand = "indicescutcomp <- indexFinder(cnolist, cutcomp)";
-		String indexFinderCutOutput = connection.executeParseOutput(indexFinderCutCommand);
+		CommandExecutor.execute("network export OutputFile=\""
+				+ MSutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "\"" + " options=sif",
+				cyServiceRegistrar);
 
-		// Expanding the gates
-		String expandGatesCommand = "cutcompexp <- expandGates(cutcomp)";
-		String expandGatesOutput = connection.executeParseOutput(expandGatesCommand);
-		
-		// Preparing for model and data training
-		String residualErrorCommand = "errorcnolist <- residualError(cnolist)";
-		String residualErrorOutput = connection.executeParseOutput(residualErrorCommand);
-		
-		String prepForSimCommand = "fields4Sim <- prep4sim(cutcompexp)";
-		String prepForSimOutput = connection.executeParseOutput(prepForSimCommand);
-		
-		String bStringCommand = "bstring <- rep(1, length(cutcompexp$reacID))";
-		String bStringOuput = connection.executeParseOutput(bStringCommand);
-		
-		// Plot cno list
-		String plotCnolistCommand = "plotCNOlist(cnolist)";
-		File cnolistPlot = connection.executeReceivePlotFile(plotCnolistCommand, "cnolist");
-		
-		// Get node types
-		String[] stimuliArray = connection.executeReceiveStrings("cnolist$namesStimuli");
-		String[] inhibitorsArray = connection.executeReceiveStrings("cnolist$namesInhibitors");
-		String[] readoutArray = connection.executeReceiveStrings("cnolist$namesSignals");
-		String[] compressedArray = connection.executeReceiveStrings("cutcompexp$speciesCompressed");
-		
-		// Get time signals
-		double[] timeSignals = connection.executeReceiveDoubles("cnolist$timeSignals");
-		
+		NetworkFactory networkFactory = new NetworkFactory();
+		CNONetwork cnoNetwork = networkFactory.importNetwork(networkFile.toString());
+
+		CNO midas = new CNO(midasFile);
+		cnoNetwork.setMidas(midas);
+		cnoNetwork.compress();
+		cnoNetwork.expand();
+
+		String[] stimuliArray = midas.namesStimuli().toArray(new String[0]);
+		String[] inhibitorsArray = midas.namesInhibitors().toArray(new String[0]);
+		String[] readoutArray = midas.namesSignals().toArray(new String[0]);
+		String[] compressedArray = cnoNetwork.compressedNodes().toArray(new String[0]);
+
+
+		List<Double> timeSignalsList = midas.timeSignals();
+		double[] timeSignals = new double[timeSignalsList.size()];
+		for (int i = 0; i < timeSignals.length; i++)
+		{
+			timeSignals[i] = timeSignalsList.get(i).doubleValue();
+		}
+
+		String loadModelOutput = "\nYour data set comprises " + midas.combinations_of_timepoint_and_treatment()
+				+ " conditions (i.e. combinations of time point and treatment)";
+		String loadMidasOutput = "\nYour data set comprises measurements on " + midas.number_of_DV_columns()
+				+ " different species";
+		String createCNOListOutput = "\nYour data set comprises " + midas.number_of_TR_columns()
+				+ " stimuli/inhibitors and 1 cell line(s) ( Cell )";
+		String measuredNodeNames = "\nThe following species are measured: " + midas.namesSignals();
+		String stimulatedNodeNames = "\nThe following species are stimulated: " + midas.namesStimuli();
+		String inhibitedNodeNames = "\nThe following species are inhibited: " + midas.namesInhibitors();
+		String compressedNodeNames = "\nThe following species are compressed: " + cnoNetwork.compressedNodes();
+
 		// Add output
-		outputString.append("[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Preprocessing" + "\n");
+		outputString.append(
+				"[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Preprocessing" + "\n");
 		outputString.append("Network: " + networkName + "\n");
 		outputString.append("MIDAS: " + FilenameUtils.getName(midasFile) + "\n");
 		outputString.append(loadModelOutput);
 		outputString.append(loadMidasOutput);
 		outputString.append(createCNOListOutput);
-		outputString.append(finderIndicesOutput);
-		outputString.append(findNONCOutput);
+		outputString.append(measuredNodeNames);
+		outputString.append(stimulatedNodeNames);
+		outputString.append(inhibitedNodeNames);
+		outputString.append(compressedNodeNames);
 		outputString.append("\n");
-		
+
+		// Mahdi
+		ContainerPanel cnolistPlot = new ContainerPanel(midas);
+
 		// Annotate selected network
-		if (displayNetworkAnnotation) {
-			// Remove Node Type attribute in case it already exists to reset the existing values
+		if (displayNetworkAnnotation)
+		{
+			// Remove Node Type attribute in case it already exists to reset the
+			// existing values
 			NetworkAttributes.removeNodeTypeAttribute(networkName, NodeTypeAttributeEnum.NA, cyServiceRegistrar);
-			
+
 			// Identify inhibited readouts
 			Collection<String> inhibitedReadouts = NodeTypeAttributeEnum.intersect(inhibitorsArray, readoutArray);
-			
+
 			// Add aatributes to nodes
-			NetworkAttributes.addNodeTypeAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED, cyServiceRegistrar);
-			NetworkAttributes.addNodeTypeAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED, cyServiceRegistrar);
-			NetworkAttributes.addNodeTypeAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT, cyServiceRegistrar);
-			NetworkAttributes.addNodeTypeAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED, cyServiceRegistrar);
-			NetworkAttributes.addNodeTypeAttribute(networkName, inhibitedReadouts, NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
-			
+			NetworkAttributes.addNodeTypeAttribute(networkName, stimuliArray, NodeTypeAttributeEnum.STIMULATED,
+					cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, inhibitorsArray, NodeTypeAttributeEnum.INHIBITED,
+					cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, readoutArray, NodeTypeAttributeEnum.READOUT,
+					cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, compressedArray, NodeTypeAttributeEnum.COMPRESSED,
+					cyServiceRegistrar);
+			NetworkAttributes.addNodeTypeAttribute(networkName, inhibitedReadouts,
+					NodeTypeAttributeEnum.INHIBITED_READOUT, cyServiceRegistrar);
+
 			// Apply visual style
 			String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
 			CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
 		}
-		
+
 		// Display results if in gui context
-		if (displayResults) {
+		if (displayResults)
+		{
 			// Create model for data point combo box
 			DefaultComboBoxModel dataPointModel = new DefaultComboBoxModel();
 			for (int i = 1; i < timeSignals.length; i++)
 				dataPointModel.addElement(timeSignals[i]);
-			
+
 			// Set combo box model and check status of time point combo box
 			controlPanel.dataPointCombo.setModel(dataPointModel);
 			controlPanel.setTimePointComboBoxStatus();
-			
+
 			// Add plot to results panel
-			resultsPanel.appendSVGPlot(cnolistPlot);
-			
+			resultsPanel.appendJPanelPlot(cnolistPlot);
+
 			// Append output to log panel
 			logPanel.appendLog(outputString.toString());
 		}
-			
+
 	}
-	
+
 	@Override
-	public <R> R getResults(Class<? extends R> type) {
+	public <R> R getResults(Class<? extends R> type)
+	{
 		return type.cast(outputString.toString());
 	}
 }

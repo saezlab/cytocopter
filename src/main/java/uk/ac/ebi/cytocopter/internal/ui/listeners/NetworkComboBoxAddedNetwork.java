@@ -7,21 +7,25 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 
-public class NetworkComboBoxAddedNetwork implements NetworkAddedListener {
+public class NetworkComboBoxAddedNetwork implements NetworkAddedListener
+{
 
 	private JComboBox networkComboBox;
-	
-	public NetworkComboBoxAddedNetwork (JComboBox networkComboBox) {
+
+	public NetworkComboBoxAddedNetwork(JComboBox networkComboBox)
+	{
 		this.networkComboBox = networkComboBox;
 	}
-	
+
 	@Override
-	public void handleEvent(NetworkAddedEvent event) {
+	public void handleEvent(NetworkAddedEvent event)
+	{
 		CyNetwork cyNetwork = event.getNetwork();
-		
-		if (cyNetwork != null) { 
+
+		if (cyNetwork != null)
+		{
 			String cyNetworkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
-			((DefaultComboBoxModel)networkComboBox.getModel()).addElement(cyNetworkName);
+			((DefaultComboBoxModel) networkComboBox.getModel()).addElement(cyNetworkName);
 		}
 	}
 

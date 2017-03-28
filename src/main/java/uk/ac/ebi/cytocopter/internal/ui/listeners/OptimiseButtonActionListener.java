@@ -8,17 +8,21 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 
-public class OptimiseButtonActionListener implements ActionListener {
+public class OptimiseButtonActionListener implements ActionListener
+{
 
 	private ControlPanel controlPanel;
-	
-	public OptimiseButtonActionListener (ControlPanel controlPanel) {
-		this.controlPanel= controlPanel;
+
+	public OptimiseButtonActionListener(ControlPanel controlPanel)
+	{
+		this.controlPanel = controlPanel;
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(ActionEvent e)
+	{
 		OptimiseTaskFactory optimiseTaskFactory = new OptimiseTaskFactory(controlPanel.cyServiceRegistrar, true);
-		controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class).execute(optimiseTaskFactory.createTaskIterator());
+		controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class)
+				.execute(optimiseTaskFactory.createTaskIterator());
 	}
 }

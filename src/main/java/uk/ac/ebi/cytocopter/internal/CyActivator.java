@@ -13,12 +13,12 @@ import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.enums.CytocopterCommandsEnum;
-import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFactory;
+//import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.ConfigureCellnoptrTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.OptimiseTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.SetNodeTypeTaskFactory;
-import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualExportMenu;
-import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualImportMenu;
+//import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualExportMenu;
+//import uk.ac.ebi.cytocopter.internal.ui.menus.SbmlQualImportMenu;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.LogPanel;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ResultsPanel;
@@ -37,10 +37,11 @@ public class CyActivator extends AbstractCyActivator {
 		this.bundleContext = bundleContext;
 		cyServiceRegistrar = getService(bundleContext, CyServiceRegistrar.class);
 		
+		
 		registerPanels();
 		registerCytocopterCommands();
 		loadVisualStyle();
-		loadSbmlQualReader();
+		
 	}
 		
 	private void registerPanels () {
@@ -53,8 +54,8 @@ public class CyActivator extends AbstractCyActivator {
 		Properties props = new Properties();
 		props.setProperty(ServiceProperties.COMMAND_NAMESPACE, CytocopterCommandsEnum.CYTOCOPTER_NAME_SPACE);
 		
-		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.CONFIGURE.getName());
-		registerService(bundleContext, new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, false), TaskFactory.class, props);
+//		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.CONFIGURE.getName());
+//		registerService(bundleContext, new ConfigureCellnoptrTaskFactory(cyServiceRegistrar, false), TaskFactory.class, props);
 		
 		props.setProperty(ServiceProperties.COMMAND, CytocopterCommandsEnum.PREPROCESS.getName());
 		registerService(bundleContext, new PreprocessTaskFactory(cyServiceRegistrar, false, false, true), TaskFactory.class, props);
@@ -72,11 +73,5 @@ public class CyActivator extends AbstractCyActivator {
 		loadVizmapFileTaskFactory.loadStyles(in);
 	}
 	
-	private void loadSbmlQualReader () {
-		SbmlQualImportMenu importSbmlQualMenu = new SbmlQualImportMenu(cyServiceRegistrar);
-		cyServiceRegistrar.registerService(importSbmlQualMenu, CyAction.class, new Properties());
-		
-//		SbmlQualExportMenu exportSbmlQualMenu = new SbmlQualExportMenu(cyServiceRegistrar);
-//		cyServiceRegistrar.registerService(exportSbmlQualMenu, CyAction.class, new Properties());
-	}
+
 }

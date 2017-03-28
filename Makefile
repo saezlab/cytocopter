@@ -3,7 +3,9 @@
 # Copyright (C) 2014 - Saez-Rodriguez Lab
 # Cytocopter
 
-# Author: Emanuel Goncalves <emanuel@ebi.ac.uk>
+# Author:
+# Mahdi Saber <mahdi.saber.de@gmail.com>
+# Emanuel Goncalves <emanuel@ebi.ac.uk>
 
 # This program is free software, you can redistribute it and/or
 # modify it under the terms of the new-style BSD license.
