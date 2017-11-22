@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.swing.JOptionPane;
 
 import org.jgap.Chromosome;
 import org.jgap.Configuration;
@@ -127,6 +128,8 @@ public class NetworkOptimizer extends FitnessFunction
 		}
 
 	}
+        
+        
 
 	// looking for best set of results
 	public SortedMap<Double, ArrayList<Integer>> runs() throws Exception
@@ -191,7 +194,6 @@ public class NetworkOptimizer extends FitnessFunction
 		}
 
 		computeWeights();
-
 		return desiredResults;
 	}
 

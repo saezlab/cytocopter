@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 import uk.ac.ebi.cytocopter.internal.mahdiexceptions.EdgeException;
 import uk.ac.ebi.cytocopter.internal.mahdiexceptions.NetworkFactoryException;
@@ -274,6 +275,35 @@ public class CNONetwork
 				else if (bitStream.get(i) == 1)
 				{
 					edge.setVisible(Edge.VISIBLE);
+				}
+				else
+				{
+					throw new EdgeException("The input bitStream must contain only 0s and 1s");
+				}
+			}
+		}
+
+		return;
+	}
+        public void removeEdges2(ArrayList<Integer> bitStream) throws EdgeException
+	{
+		if (bitStream.size() != this.availableEdges())
+		{
+			throw new EdgeException("The number of input bitStream should be equal to the number of available edges");
+		}
+
+		for (int i = 0; i < this.availableEdges(); i++)
+		{
+			Edge edge = findEdge(i);
+			if (edge.isAvailabe())
+			{
+				if (bitStream.get(i) == 0)
+				{
+					edge.setAvailabe(false);
+				}
+				else if (bitStream.get(i) == 1)
+				{
+					edge.setAvailabe(true);
 				}
 				else
 				{
@@ -1056,6 +1086,42 @@ public class CNONetwork
 				writer.write(edge.getTarget().getName() + "\r\n");
 			}
 			else if (edge.isAvailabe() && edge.sources.size() > 1)
+			{
+				hyperEdgeAndNode++;
+				for (int j = 0; j < edge.sources.size(); j++)
+				{
+					writer.write(edge.getSources().get(j).getName());
+					writer.write("\t" + edge.getSourceSigns().get(j) + "\t");
+					writer.write("and" + hyperEdgeAndNode + "\r\n");
+				}
+				writer.write("and" + hyperEdgeAndNode);
+				writer.write("\t" + 1 + "\t");
+				writer.write(edge.getTarget().getName() + "\r\n");
+			}
+		}
+
+		writer.close();
+
+		return exportFile;
+	}
+        
+        public File exportNetwork2(File exportFile) throws IOException
+	{
+
+		OutputStream os = new FileOutputStream(exportFile);
+		OutputStreamWriter writer = new OutputStreamWriter(os);
+		int hyperEdgeAndNode = 0;
+
+		for (int i = 0; i < edges.size(); i++)
+		{
+			Edge edge = edges.get(i);
+			if (edge.sources.size() == 1 && edge.isVisible() == true && edge.isAvailabe())
+			{
+				writer.write(edge.getSources().get(0).getName());
+				writer.write("\t" + edge.getSourceSigns().get(0) + "\t");
+				writer.write(edge.getTarget().getName() + "\r\n");
+			}
+			else if (edge.sources.size() > 1 && edge.isVisible() == true && edge.isAvailabe())
 			{
 				hyperEdgeAndNode++;
 				for (int j = 0; j < edge.sources.size(); j++)

@@ -1,6 +1,7 @@
 package uk.ac.ebi.cytocopter.internal.cellnoptr.tasks;
 
 import java.io.File;
+import static java.lang.System.exit;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedMap;
+import javax.swing.JOptionPane;
 
 import javax.swing.JPanel;
 
@@ -28,6 +31,7 @@ import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.CommandExecutor;
 import uk.ac.ebi.cytocopter.internal.cellnoptr.utils.NetworkAttributes;
 import uk.ac.ebi.cytocopter.internal.mahdimidas.CNO;
 import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.CNONetwork;
+import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.Edge;
 import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.NetworkFactory;
 import uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling.NetworkOptimizer;
 import uk.ac.ebi.cytocopter.internal.mahdiplotting.ContainerPanelSimulation;
@@ -104,24 +108,24 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 				
 
 				// Export selected network to sif
-				File networkFile = File.createTempFile(networkName + "_" + "temp",
-						".sif");
-				CommandExecutor.execute(
-						"network export OutputFile=\""
-								+ MSutils.getWindowsCorrectPath(networkFile
-										.getAbsolutePath()) + "\"" + " options=sif",
-						cyServiceRegistrar);
+                                File networkFile2 = File.createTempFile(networkName + "_" + "temp", ".sif");
+                                String networkFile = networkFile2.getName();
+                                networkFile2.delete();
+                                CommandExecutor.execute("network export OutputFile=\""
+                                               + MSutils.getWindowsCorrectPath(networkFile) + "\"" + " options=sif",
+                                               cyServiceRegistrar);
 				
 				midasFile = controlPanel.getMidasFilePath();
 				
 				
 				NetworkFactory networkFactory = new NetworkFactory();
 				CNONetwork cnoNetwork= networkFactory.importNetwork(networkFile.toString());
-				
+
 				CNO midas = new CNO(midasFile);
 				cnoNetwork.setMidas(midas);
 				cnoNetwork.compress();
 				cnoNetwork.expand();
+                                
 				
 				int p_TimePoint = Integer.parseInt(timePoint.substring(0,timePoint.indexOf(".")));
 				double p_SizeFac = controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.SIZE_FAC);
@@ -132,15 +136,18 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 				double p_RelTol= controlPanel.getAlgorithmPropertyValue(AlgorithmConfigurationsEnum.REL_TOL);
 				
 				
-				NetworkOptimizer networkOptimizer =  new NetworkOptimizer(cnoNetwork, p_TimePoint,p_SizeFac,p_NAFac,p_PopSize,p_MaxTime,p_MaxGen,p_RelTol);
+                                //Export all models to SIF
+			
+                                NetworkOptimizer networkOptimizer =  new NetworkOptimizer(cnoNetwork, p_TimePoint,p_SizeFac,p_NAFac,p_PopSize,p_MaxTime,p_MaxGen,p_RelTol);
 				networkOptimizer.runs();
-
-				File optimisedNetworkFile = File.createTempFile("Scaffold", ".sif");
-				
+                                File optimisedNetworkFile = File.createTempFile("Scaffold", ".sif");
 				cnoNetwork.exportNetwork(optimisedNetworkFile);
-		
-		
-				
+                                
+                                //TEST
+                                ArrayList<Integer> bestFit = networkOptimizer.run();
+                                
+                                
+                               
 		// Generate a unique name for the optimised network
 		String optimisedNetworkName = CyNetworkUtils.getUniqueNetworkName(cyServiceRegistrar, networkName + "_" + "Optimised");
 		
@@ -187,7 +194,6 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		// Set Optimised network node types
 		CyNetwork optimisedNetwork = CyNetworkUtils.getCyNetwork(cyServiceRegistrar, optimisedNetworkName);
 		List<CyNode> optimisedNetworkNodes = optimisedNetwork.getNodeList();
-		
 		for (CyNode node : optimisedNetworkNodes) {
 			String nodeName = optimisedNetwork.getRow(node).get(CyNetwork.NAME, String.class);
 			String operator = NodeTypeAttributeEnum.isOperator(nodeName);
@@ -202,12 +208,12 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		String edgeWeightAttribute = "Cytocopter.EdgeWeight";
 		
 		optimisedNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS).createColumn(edgeWeightAttribute, Double.class, false);
-		
-		
+                	
 		
 		
 		for (int i = 0; i < edgesNames.length; i++) {
 			CyEdge edge = CyNetworkUtils.getCyEdge(optimisedNetwork, edgesNames[i]);
+  
 			optimisedNetwork.getRow(edge).set(edgeWeightAttribute, edgesWeights[i]);
 		}
 		
@@ -232,7 +238,18 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 		JPanel optimizationJPanel = new ContainerPanelSimulation(midas,0,p_TimePoint, simulationResultsBeginTime,simulationResultEndTime);
 		
 		resultsPanel.appendJPanelPlot(optimizationJPanel);
-		
+                
+                
+                
+                //Export the best fit to SIF file 
+                cnoNetwork.restoreEdges();
+                cnoNetwork.removeEdges(bestFit);
+                File optimisedNetworkFileSBML = File.createTempFile("Scaffold", ".sif");
+                cnoNetwork.exportNetwork2(optimisedNetworkFileSBML);
+                String filename = SBMLFileString.getInstance();
+                filename = optimisedNetworkFileSBML.toString();
+                SBMLFileString.setInstance(filename);
+                
 		
 	}
 	

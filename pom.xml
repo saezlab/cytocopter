@@ -12,7 +12,7 @@
 
 	<groupId>uk.ac.ebi</groupId>
 	<artifactId>cytocopter</artifactId>
-	<version>3.0</version>
+	<version>3.5</version>
 
 	<name>CytoCopteR</name>
 
@@ -224,6 +224,16 @@
 			<groupId>net.sf.jgap</groupId>
 			<artifactId>jgap</artifactId>
 			<version>3.4.4</version>
+		 <exclusions>
+		  <exclusion>
+		   <groupId>xerces</groupId>
+		   <artifactId>xercesImpl</artifactId>
+		  </exclusion>
+		  <exclusion>
+		   <groupId>xerces</groupId>
+		   <artifactId>xmlParserAPIs</artifactId>
+		  </exclusion>
+		 </exclusions>
 		</dependency>
 
 		<!-- Added By Mahdi for plotting -->
@@ -239,8 +249,6 @@
 			<artifactId>opencsv</artifactId>
 			<version>2.4</version>
 		</dependency>
-
-
 		
 		<!-- Testing -->
 		<dependency>

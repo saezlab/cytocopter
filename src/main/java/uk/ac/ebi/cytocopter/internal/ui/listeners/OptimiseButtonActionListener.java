@@ -21,8 +21,10 @@ public class OptimiseButtonActionListener implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
+                
 		OptimiseTaskFactory optimiseTaskFactory = new OptimiseTaskFactory(controlPanel.cyServiceRegistrar, true);
 		controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class)
 				.execute(optimiseTaskFactory.createTaskIterator());
+                controlPanel.SBMLExportButton.setEnabled(true);
 	}
 }

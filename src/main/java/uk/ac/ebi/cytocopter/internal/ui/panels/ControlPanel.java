@@ -38,6 +38,8 @@ import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxAddedNetwork;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.NetworkComboBoxRemovedNetwork;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.OptimiseButtonActionListener;
 import uk.ac.ebi.cytocopter.internal.ui.listeners.PreprocessButtonActionListener;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.SBMLExportButtonActionListener;
+import uk.ac.ebi.cytocopter.internal.ui.listeners.SBMLImportButtonActionListener;
 
 @SuppressWarnings("serial")
 public class ControlPanel extends JPanel implements CytoPanelComponent {
@@ -54,6 +56,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 	public File dataFile;
 	
 	public JButton preprocessButton;
+        
+        public JButton SBMLExportButton;
+        public JButton SBMLImportButton;
 	
 	public JLabel formalismLabel;
 	public JComboBox formalismCombo;
@@ -95,25 +100,33 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 		c.fill = GridBagConstraints.HORIZONTAL;
 
 		// Initialise panel components
-		c.gridy = 0;
+                
+                c.gridy = 0;
+                createSBMLImportButton (c);
+                
+                
+		c.gridy = 1;
 		createNetworkRow (c);
 
-		c.gridy = 1;
+		c.gridy = 2;
 		createDataRow (c);
 		
-		c.gridy = 2;
+		c.gridy = 3;
 		createPreprocessButtonRow (c);
 
-		c.gridy = 3;
+		c.gridy = 4;
 		createFormalismRow (c);
 
-		c.gridy = 4;
+		c.gridy = 5;
 		createTimePointsRows (c);
 
-		c.gridy = 5;
-		createOptimiseButtonRow (c);
-
 		c.gridy = 6;
+		createOptimiseButtonRow (c);
+                
+                c.gridy = 7;
+                createSBMLExportButton (c);
+                
+		c.gridy = 8;
 		createAlgorithmConfigurations (c);
 
 		// Add components listeners
@@ -123,6 +136,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 		intialiseFormalismRow();
 		initialiseTimePointsRows();
 		initialiseOptimiseButtonRow();
+                initialiseSBMLExportButton();
+                initialiseSBMLImportButton();
 		initialiseAlgorithmConfigurations();
 	}
 	
@@ -193,6 +208,25 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 		optimiseButton.setEnabled(false);
 		add(optimiseButton, c);
 	}
+        
+        
+        private void createSBMLExportButton (GridBagConstraints c) {
+		c.gridx = 2;
+		c.gridwidth = 1;
+		SBMLExportButton = new JButton("Export to SBML");
+                SBMLExportButton.setEnabled(false);
+		add(SBMLExportButton, c);
+	}
+        
+        private void createSBMLImportButton (GridBagConstraints c) {
+		c.gridx = 2;
+		c.gridwidth = 1;
+		SBMLImportButton = new JButton("Import from SBML");
+                SBMLImportButton.setEnabled(true);
+		add(SBMLImportButton, c);
+	}
+        
+        
 	
 	private void createAlgorithmConfigurations (GridBagConstraints c) {
 		c.gridx = 2;
@@ -235,7 +269,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 			}
 		}
 		
-		c.gridy = 6;
+		c.gridy = 8;
 		c.gridx = 0;
 		c.gridwidth = 3;
 		c.weighty = 0.1;
@@ -302,6 +336,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 	private void initialiseOptimiseButtonRow () {
 		optimiseButton.addActionListener(new OptimiseButtonActionListener(this));
 	}
+        
+        private void initialiseSBMLExportButton () {
+		SBMLExportButton.addActionListener(new SBMLExportButtonActionListener(this));
+	}
+        private void initialiseSBMLImportButton () {
+		SBMLImportButton.addActionListener(new SBMLImportButtonActionListener(this,cyServiceRegistrar));
+	}
+        
 	
 	private void initialiseAlgorithmConfigurations () {}
 	

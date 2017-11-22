@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -90,10 +91,13 @@ public class PreprocessTask extends AbstractTask implements ObservableTask
 		CommandExecutor.execute("network set current network=" + networkName, cyServiceRegistrar);
 
 		// Export selected network to sif
-		File networkFile = File.createTempFile(networkName + "_" + "temp", ".sif");
+		File networkFile2 = File.createTempFile(networkName + "_" + "temp", ".sif");
+                String networkFile = networkFile2.getName();
+                networkFile2.delete();
 		CommandExecutor.execute("network export OutputFile=\""
-				+ MSutils.getWindowsCorrectPath(networkFile.getAbsolutePath()) + "\"" + " options=sif",
+				+ MSutils.getWindowsCorrectPath(networkFile) + "\"" + " options=sif",
 				cyServiceRegistrar);
+                                
 
 		NetworkFactory networkFactory = new NetworkFactory();
 		CNONetwork cnoNetwork = networkFactory.importNetwork(networkFile.toString());
