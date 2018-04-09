@@ -109,7 +109,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 
 				// Export selected network to sif
                                 File networkFile2 = File.createTempFile(networkName + "_" + "temp", ".sif");
-                                String networkFile = networkFile2.getName();
+                                String networkFile = networkFile2.getAbsolutePath();
                                 networkFile2.delete();
                                 CommandExecutor.execute("network export OutputFile=\""
                                                + MSutils.getWindowsCorrectPath(networkFile) + "\"" + " options=sif",
