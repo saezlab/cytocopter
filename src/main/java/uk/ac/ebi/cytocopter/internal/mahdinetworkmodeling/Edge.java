@@ -1,8 +1,13 @@
 package uk.ac.ebi.cytocopter.internal.mahdinetworkmodeling;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import javax.swing.JOptionPane;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.FlagClass;
 
 import uk.ac.ebi.cytocopter.internal.mahdiexceptions.EdgeException;
 import uk.ac.ebi.cytocopter.internal.mahdiexceptions.NodeException;
@@ -34,8 +39,6 @@ public class Edge
 	{
 		this.compressedExpanded = compressedExpanded;
 	}
-
-
 	
 	public boolean isAvailabe()
 	{
@@ -49,8 +52,16 @@ public class Edge
 
 	public Edge(ArrayList<Node> sources, Node target, ArrayList<Integer> sources_signs) throws EdgeException
 	{
-		if (!hasUniqueSources(sources))
-			throw new EdgeException("All source nodes should be unique");
+		if (!hasUniqueSources(sources)){           
+                    ArrayList<String> repetitions = notUniqueNames(sources);
+                    ArrayList<String> inconsistent = inconsistentSign(sources, repetitions, sources_signs);
+                    String r = inconsistent.stream().collect(Collectors.joining(","));
+                    //String flag = FlagClass.getInstance();
+                    FlagClass.getStringInstance();
+                    FlagClass.setStringInstance(target.getName()+ " to " + r);
+                    //JOptionPane.showMessageDialog(null, "The following nodes may have inconsistent signs: " + r, "Warning", JOptionPane.WARNING_MESSAGE);
+                
+                }
 
 		if (sources.size() != sources_signs.size())
 			throw new EdgeException("Number of Nodes must be equal to Number of signs ");
@@ -111,6 +122,58 @@ public class Edge
 		return false;
 
 	}
+        private ArrayList<String> notUniqueNames(ArrayList<Node> sources)
+	{
+		ArrayList<String> sourceNames = new ArrayList<String>();
+                ArrayList<String> toReturn = new ArrayList<String>();
+
+		for (Node node : sources)
+		{
+			sourceNames.add(node.getName());
+		}
+                
+                Map<String, Integer> duplicates = new HashMap<String, Integer>();
+
+                for (String str : sourceNames) {
+                   if (duplicates.containsKey(str)) {
+                      duplicates.put(str, duplicates.get(str) + 1);
+                   } else {
+                      duplicates.put(str, 1);
+                   }
+                }
+
+                for (Map.Entry<String, Integer> entry : duplicates.entrySet()) {
+                    
+                    if(entry.getValue()>1){
+                        toReturn.add(entry.getKey());
+                    }
+                    
+                   
+                }
+                return toReturn;
+	}
+        private ArrayList<String> inconsistentSign(ArrayList<Node> sources, ArrayList<String> repetitions, ArrayList<Integer> sources_signs)
+	{
+         
+                ArrayList<String> toReturn = new ArrayList<String>();
+                ArrayList<Integer> matched_sign = new ArrayList<>();
+                for (int i = 0; i<repetitions.size();i++){
+                    for (int j = 0; j<sources.size();j++){
+                        String name = sources.get(j).getName();
+                        if (repetitions.get(i).equals(name)){
+                            matched_sign.add(sources_signs.get(j));
+                        }
+                    }
+                    //for (Integer K : matched_sign)JOptionPane.showMessageDialog(null ,K);
+                    boolean allEqual = matched_sign.stream().distinct().limit(2).count() <= 1;
+                    if (allEqual==false){
+                        toReturn.add(repetitions.get(i));
+                    }
+                    matched_sign = new ArrayList<>();
+                }
+                return toReturn;
+	}
+        
 
 	
 

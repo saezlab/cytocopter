@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.cytoscape.work.swing.DialogTaskManager;
+import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.Observer;
 
 import uk.ac.ebi.cytocopter.internal.cellnoptr.tasks.PreprocessTaskFactory;
 import uk.ac.ebi.cytocopter.internal.ui.panels.ControlPanel;
@@ -64,11 +65,11 @@ public class PreprocessButtonActionListener implements ActionListener
 
 		else
 		{
-
+                        Observer taskObserver = new Observer();
 			PreprocessTaskFactory preprocessTaskFactory = new PreprocessTaskFactory(controlPanel.cyServiceRegistrar,
 					true, true, true);
 			controlPanel.cyServiceRegistrar.getService(DialogTaskManager.class)
-					.execute(preprocessTaskFactory.createTaskIterator());
+					.execute(preprocessTaskFactory.createTaskIterator(), taskObserver);
 			controlPanel.optimiseButton.setEnabled(true);
 		}
 	}

@@ -74,7 +74,7 @@ public class OneChartPanel extends JPanel
 			double sn = dataset.getYValue(1, 1);
 			
 			double blueAmount = Math.pow(x0-s0, 2) + Math.pow(xn-sn, 2);
-			plot.setBackgroundPaint(new Color(1.0f,1.0f,1-(float)blueAmount));
+			plot.setBackgroundPaint(new Color(1.0f,1.0f, Math.max(0, 1-(float)blueAmount)));
 		}
 		else if (dataset.getSeriesCount() == 1)
 		{

@@ -16,6 +16,7 @@ import java.util.Properties;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -71,6 +72,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 	
 	public JPanel algorithmPanel;
 	public Map<String, JTextField> configurationsMap;
+        
+        public JCheckBox checkbox;
 	
 	
 	public ControlPanel (CyServiceRegistrar cyServiceRegistrar) {
@@ -110,23 +113,26 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 
 		c.gridy = 2;
 		createDataRow (c);
+                
+                c.gridy = 3;
+                createExpandBox (c);
 		
-		c.gridy = 3;
+		c.gridy = 4;
 		createPreprocessButtonRow (c);
 
-		c.gridy = 4;
+		c.gridy = 5;
 		createFormalismRow (c);
 
-		c.gridy = 5;
+		c.gridy = 6;
 		createTimePointsRows (c);
 
-		c.gridy = 6;
+		c.gridy = 7;
 		createOptimiseButtonRow (c);
                 
                 c.gridy = 7;
                 createSBMLExportButton (c);
                 
-		c.gridy = 8;
+		c.gridy = 9;
 		createAlgorithmConfigurations (c);
 
 		// Add components listeners
@@ -211,7 +217,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
         
         
         private void createSBMLExportButton (GridBagConstraints c) {
-		c.gridx = 2;
+		c.gridx = 1;
 		c.gridwidth = 1;
 		SBMLExportButton = new JButton("Export to SBML");
                 SBMLExportButton.setEnabled(false);
@@ -225,6 +231,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
                 SBMLImportButton.setEnabled(true);
 		add(SBMLImportButton, c);
 	}
+        
+        private void createExpandBox (GridBagConstraints c) {
+		c.gridx = 1;
+		c.gridwidth = 1;
+		checkbox = new JCheckBox("Expand gates");
+		add(checkbox, c);
+	}
+        
+        public JCheckBox getJCheckBox(){
+            return checkbox;
+        }
         
         
 	
@@ -276,6 +293,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent {
 		
 		add(algorithmPanel, c);
 	}
+        
+        
 	
 	
 	// Initialise methods  

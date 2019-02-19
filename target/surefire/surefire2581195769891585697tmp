@@ -1,0 +1,6 @@
+#surefire
+#Tue Feb 19 02:47:37 GMT 2019
+maven.ext.class.path=/Applications/NetBeans/NetBeans 8.2.app/Contents/Resources/NetBeans/java/maven-nblib/netbeans-eventspy.jar
+user.dir=/Users/francescoceccarelli/Desktop/RWTH-Aachen /cytocopter-master
+localRepository=/Users/francescoceccarelli/.m2/repository
+basedir=/Users/francescoceccarelli/Desktop/RWTH-Aachen /cytocopter-master

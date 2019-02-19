@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.SortedMap;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 
 import javax.swing.JPanel;
@@ -124,7 +125,12 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 				CNO midas = new CNO(midasFile);
 				cnoNetwork.setMidas(midas);
 				cnoNetwork.compress();
-				cnoNetwork.expand();
+                                JCheckBox checkbox = controlPanel.getJCheckBox();
+                                boolean checked = checkbox.isSelected();
+                                if (checked == true){
+                                    cnoNetwork.expand();
+                                    //JOptionPane.showMessageDialog(null, "Expanding");
+                                }
                                 
 				
 				int p_TimePoint = Integer.parseInt(timePoint.substring(0,timePoint.indexOf(".")));
@@ -217,13 +223,6 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
 			optimisedNetwork.getRow(edge).set(edgeWeightAttribute, edgesWeights[i]);
 		}
 		
-		// Apply visual style
-		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
-		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
-		
-		// Apply layout
-		String layoutCommand = "layout hierarchical";
-		CommandExecutor.execute(layoutCommand, cyServiceRegistrar);
 		
 		// Write log
 		outputString.append("[" + dateFormat.format(Calendar.getInstance().getTime()) + "] " + "Cytocopter Optimising" + "\n");
@@ -241,6 +240,7 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
                 
                 
                 
+                
                 //Export the best fit to SIF file 
                 cnoNetwork.restoreEdges();
                 cnoNetwork.removeEdges(bestFit);
@@ -250,7 +250,23 @@ public class OptimiseTask extends AbstractTask implements ObservableTask {
                 filename = optimisedNetworkFileSBML.toString();
                 SBMLFileString.setInstance(filename);
                 
-		
+                
+                
+		// Apply layout
+		String layoutCommand = "layout hierarchical";
+		CommandExecutor.execute(layoutCommand, cyServiceRegistrar);
+                
+                // Apply visual style
+		String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
+                //JOptionPane.showMessageDialog(null, applyVisualStyleCommand);
+                try {
+                    Thread.sleep(1000);                 //1000 milliseconds is one second.
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+		CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
+               
+
 	}
 	
 	

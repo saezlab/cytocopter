@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FilenameUtils;
@@ -15,6 +16,8 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -69,7 +72,6 @@ public class PreprocessTask extends AbstractTask implements ObservableTask
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception
 	{
-
 		taskMonitor.setTitle("Cytocopter - Preprocessing...");
 
 		// Get necessary attributes from control panel otherwise from tunables.
@@ -105,7 +107,14 @@ public class PreprocessTask extends AbstractTask implements ObservableTask
 		CNO midas = new CNO(midasFile);
 		cnoNetwork.setMidas(midas);
 		cnoNetwork.compress();
-		cnoNetwork.expand();
+                JCheckBox checkbox = controlPanel.getJCheckBox();
+                boolean checked = checkbox.isSelected();
+                if (checked == true){
+                    cnoNetwork.expand();
+                    //JOptionPane.showMessageDialog(null, "Expanding");
+                }
+
+    
 
 		String[] stimuliArray = midas.namesStimuli().toArray(new String[0]);
 		String[] inhibitorsArray = midas.namesInhibitors().toArray(new String[0]);
@@ -172,6 +181,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask
 
 			// Apply visual style
 			String applyVisualStyleCommand = "vizmap apply styles=" + CyActivator.visualStyleName;
+                        //JOptionPane.showMessageDialog(null, applyVisualStyleCommand);
 			CommandExecutor.execute(applyVisualStyleCommand, cyServiceRegistrar);
 		}
 
@@ -193,7 +203,7 @@ public class PreprocessTask extends AbstractTask implements ObservableTask
 			// Append output to log panel
 			logPanel.appendLog(outputString.toString());
 		}
-
+        
 	}
 
 	@Override
@@ -201,4 +211,6 @@ public class PreprocessTask extends AbstractTask implements ObservableTask
 	{
 		return type.cast(outputString.toString());
 	}
+
+   
 }

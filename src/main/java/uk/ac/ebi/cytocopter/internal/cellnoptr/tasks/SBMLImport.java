@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.ParserConfigurationException;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -112,6 +113,7 @@ public class SBMLImport {
         
         CyNetwork SIFCyNetwork = CyNetworkUtils.readCyNetworkFromFile(cyServiceRegistrar, temp);
 	SIFCyNetwork.getRow(SIFCyNetwork).set(CyNetwork.NAME, modelID);
+        JOptionPane.showMessageDialog(null, SIFCyNetwork);
 	CyNetworkUtils.createViewAndRegister(cyServiceRegistrar, SIFCyNetwork);
     }
 
